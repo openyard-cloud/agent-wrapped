@@ -66,7 +66,7 @@ export function cardHtml(s) {
     <div class="wc-months">${months}</div>
     <div class="wc-stats">
       <div><b data-count="days" data-to="${s.activeDays}">${plain(s.activeDays)}</b><span>active days</span></div>
-      <div><b data-count="tokens" data-to="${s.tokens}">${fmt(s.tokens)}</b><span>tokens</span></div>
+      <div><b data-count="tokens" data-to="${s.tokens}">${fmt(s.tokens)}${s.tokenDays > 0 && s.tokenDays < s.activeDays ? "+" : ""}</b><span>tokens</span></div>
       <div><b data-count="streak" data-to="${s.streak.days}">${s.streak.days} days</b><span>longest streak</span></div>
       <div><b class="wc-fav"><span>${esc(fav)}</span></b><span>favourite model</span></div>
     </div>

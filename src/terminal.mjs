@@ -17,7 +17,7 @@ export function terminalSummary(s, { file } = {}) {
   const rows = [
     ["Active days", `${s.activeDays}  ${dim("longest streak " + s.streak.days + "d")}`],
     ["Sessions", s.sessions.toLocaleString("en-US")],
-    ["Tokens", `${fmt(s.tokens)}  ${dim("+ " + fmt(s.contextTokens) + " re-read from cache")}`],
+    ["Tokens", `${fmt(s.tokens)}${s.tokenDays > 0 && s.tokenDays < s.activeDays ? "+  " + dim(`counted on ${s.tokenDays} of ${s.activeDays} days`) + " " : ""}  ${dim("+ " + fmt(s.contextTokens) + " re-read from cache")}`],
     ["Favourite model", s.favourite ? s.favourite.name : "–"],
     ["Top tool", s.tools[0] ? s.tools[0].name : "–"],
     ["Jan … Dec", lime(monthStrip(s.heatmap, s.year))],
