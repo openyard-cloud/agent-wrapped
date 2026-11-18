@@ -104,7 +104,9 @@ test("prompt history fills the days the cache and transcripts lost, and nothing 
   const s = JSON.parse(r.stdout);
   assert.equal(s.activeDays, 2);
   assert.equal(s.historyDays, 1);
-  assert.equal(s.tokenDays, 1);               // the history day has no tokens, so the total is a floor
+  assert.equal(s.tokenDays, 1);
+  assert.equal(s.prompts, 3 + 1);              // history prompts count toward the year...
+  assert.equal(s.transcriptPrompts, 1);        // ...but not toward the Esc rate, which only transcripts know               // the history day has no tokens, so the total is a floor
   assert.equal(s.heatmap["2026-09-03"], 3);   // three prompts
   assert.equal(s.heatmap["2026-10-20"], 2);   // the transcript's count, not the history's
   assert.equal(s.sessions, 1 + 2);             // a 30-minute gap starts a new session

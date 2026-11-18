@@ -300,7 +300,8 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
         el("p", { class: "note", text: "Lines and value come from Claude Code's own session totals, for the transcripts still on disk. Value is what the same usage would cost at API prices, not what you paid." }) ]; } },
 
     { when: D.interrupts >= 3, bg: "var(--ink)", fg: "var(--tomato)", build: function () {
-      var every = D.prompts > D.interrupts ? Math.round(D.prompts / D.interrupts) : 0;
+      var asked = D.transcriptPrompts != null ? D.transcriptPrompts : D.prompts;
+      var every = asked > D.interrupts ? Math.round(asked / D.interrupts) : 0;
       return [
         label("Hands on the wheel"),
         counter(A(el("div", { class: "big", text: plain(D.interrupts) }), 100), D.interrupts, plain, 100),

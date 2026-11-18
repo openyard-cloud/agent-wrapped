@@ -166,6 +166,8 @@ export function tally({ acc, cache, year, extra = [], history = null }) {
     contextTokens: (cache?.firstSessionDate?.startsWith(y) ? Object.values(cache?.modelUsage || {}).reduce((a, u) => a + (u.cacheReadInputTokens || 0), 0) : 0) + all.reduce((a, x) => a + x.cacheReadTokens, 0),
     subagentMessages: all.reduce((a, x) => a + x.subagentMessages, 0),
     prompts: fromHistory((a, h) => a + h.prompts, all.reduce((a, x) => a + [...x.days.values()].reduce((b, d) => b + (d.prompts || 0), 0), 0)), // transcripts, then history
+    // Esc interrupts exist only in transcripts, so their rate is taken against transcript prompts alone.
+    transcriptPrompts: all.reduce((a, x) => a + [...x.days.values()].reduce((b, d) => b + (d.prompts || 0), 0), 0),
     interrupts: all.reduce((a, x) => a + (x.interrupts || 0), 0),
     skippedCompressed: extra.reduce((a, e) => a + (e.acc.skippedCompressed || 0), 0),
   };
@@ -198,7 +200,7 @@ export function mergeTallies(list) {
     if (t.longest && (!out.longest || t.longest.activeMs > out.longest.activeMs)) out.longest = t.longest;
     if (t.cacheLongest && (!out.cacheLongest || t.cacheLongest.messageCount > out.cacheLongest.messageCount)) out.cacheLongest = t.cacheLongest;
     out.projects = [...new Set([...out.projects, ...t.projects])];
-    for (const k of ["cost", "linesAdded", "linesRemoved", "contextTokens", "subagentMessages", "prompts", "interrupts", "skippedCompressed", "historyDays"]) out[k] = (out[k] || 0) + (t[k] || 0);
+    for (const k of ["cost", "linesAdded", "linesRemoved", "contextTokens", "subagentMessages", "prompts", "transcriptPrompts", "interrupts", "skippedCompressed", "historyDays"]) out[k] = (out[k] || 0) + (t[k] || 0);
   }
   return out;
 }
@@ -258,6 +260,7 @@ export function finish(t, { now = Date.now() } = {}) {
     languages: top(new Map([...allExts].filter(([e]) => LANG[e])), 5, e => LANG[e]),
     subagentMessages: t.subagentMessages || 0,
     prompts: t.prompts || 0,
+    transcriptPrompts: t.transcriptPrompts ?? t.prompts ?? 0,
     interrupts: t.interrupts || 0,
     historyDays: t.historyDays || 0,
     weekdays: t.weekdays,
