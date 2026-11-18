@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>agent-wrapped: your year with Claude Code, wrapped</title>
-<meta name="description" content="One command turns the Claude Code history already on your computer into a Spotify Wrapped style story and a card you can share. Local only, nothing uploaded.">
+<title>agent-wrapped: your year with Claude Code and Codex, wrapped</title>
+<meta name="description" content="One command turns the Claude Code and Codex history already on your computer into a Spotify Wrapped style story and a card you can share. Local only, nothing uploaded.">
 <link rel="canonical" href="https://wrapped.openyard.cloud/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://wrapped.openyard.cloud/">
-<meta property="og:title" content="agent-wrapped: your year with Claude Code, wrapped">
-<meta property="og:description" content="One command turns your local Claude Code history into a story and a card you can share. Nothing is uploaded.">
+<meta property="og:title" content="agent-wrapped: your year with Claude Code and Codex, wrapped">
+<meta property="og:description" content="One command turns your local Claude Code and Codex history into a story and a card you can share. Nothing is uploaded.">
 <meta property="og:image" content="https://wrapped.openyard.cloud/card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="675">
@@ -139,7 +139,7 @@ footer a { color: var(--white); }
 
   <header class="hero">
     <div>
-      <h1>Your year with Claude Code, wrapped</h1>
+      <h1>Your year with Claude Code and Codex, wrapped</h1>
       <p class="lead">One command turns the history already on your computer into a short story and a card you can post. Nothing is uploaded.</p>
       <div class="cmd"><code>npx github:openyard-cloud/agent-wrapped</code><button type="button" data-copy="npx github:openyard-cloud/agent-wrapped">Copy</button></div>
       <p class="under">Needs Node 18 or newer. No account, no API key.</p>
@@ -153,7 +153,7 @@ footer a { color: var(--white); }
 
 <section class="band card-band">
   <div class="inner">
-    <img src="/card.png" width="1200" height="675" alt="A share card: The Night Owl, a heatmap of the whole year, 248 active days, 155M tokens, a 14-day streak, favourite model Opus 4.8. Demo data." loading="lazy">
+    <img src="/card.png" width="1200" height="675" alt="A share card: My 2026 with Claude Code and Codex, The Night Owl, a heatmap of the whole year, 257 active days, 170M tokens, a 19-day streak, favourite model Opus 4.8. Demo data." loading="lazy">
     <div class="card-copy">
       <h2>The last slide is a card you can post</h2>
       <p>Your label, your year as a heatmap, active days, tokens, your longest streak and your favourite model. Sized 1200 by 675 for X and LinkedIn, saved as a PNG with one button.</p>
@@ -165,8 +165,8 @@ footer a { color: var(--white); }
   <div class="inner">
     <h2>How it works</h2>
     <ol>
-      <li><div><h3>Paste the command</h3><p>Any terminal on the computer where you use Claude Code. It runs straight from the GitHub repository.</p></div></li>
-      <li><div><h3>It reads what Claude Code already keeps</h3><p>The <code>/stats</code> cache, which goes back to your first session, and the session transcripts in <code>~/.claude</code>. Days that both cover are counted once.</p></div></li>
+      <li><div><h3>Paste the command</h3><p>Any terminal on the computer where you use Claude Code or Codex. It runs straight from the GitHub repository.</p></div></li>
+      <li><div><h3>It reads what your agents already keep</h3><p>For Claude Code, the <code>/stats</code> cache and the session transcripts in <code>~/.claude</code>; for Codex, the sessions in <code>~/.codex</code>. Both can share one card, and no day is counted twice.</p></div></li>
       <li><div><h3>Tap through, save your card</h3><p>One HTML file opens in your browser. The last slide saves your card.</p></div></li>
     </ol>
   </div>
@@ -190,9 +190,9 @@ footer a { color: var(--white); }
       <details><summary>Why do some months look empty?</summary><p>Claude Code deletes session transcripts after 30 days by default. agent-wrapped also reads the <code>/stats</code> cache, which goes back further but only up to the last time you ran <code>/stats</code>. Run <code>/stats</code> once, then run agent-wrapped again. For a full year next time, set <code>"cleanupPeriodDays": 365</code> in <code>~/.claude/settings.json</code>.</p></details>
       <details><summary>What does "value at API prices" mean?</summary><p>Claude Code's own estimate of what the same usage would cost on the API. On a subscription, it isn't what you paid.</p></details>
       <details><summary>How is the longest session measured?</summary><p>By active time. Pauses longer than 30 minutes are left out, so a session left open overnight doesn't count as twelve hours.</p></details>
-      <details><summary>Does it work with Codex, Gemini CLI or Cursor?</summary><p>Not yet. Claude Code comes first. Pull requests are welcome.</p></details>
+      <details><summary>Does it work with Codex, Gemini CLI or Cursor?</summary><p>Codex, yes: it reads <code>~/.codex</code>, and if you use both agents you get one card for the two. Gemini CLI and Cursor not yet. Pull requests are welcome.</p></details>
       <details><summary>Can I run it as a slash command?</summary><p>Yes. Run <code>claude plugin marketplace add openyard-cloud/agent-wrapped</code> and <code>claude plugin install agent-wrapped@agent-wrapped</code>, then type <code>/wrapped</code>.</p></details>
-      <details><summary>Is this made by Anthropic?</summary><p>No. agent-wrapped is an independent open-source project. Claude and Claude Code are products of Anthropic.</p></details>
+      <details><summary>Is this made by Anthropic or OpenAI?</summary><p>No. agent-wrapped is an independent open-source project. Claude and Claude Code are products of Anthropic; Codex is a product of OpenAI.</p></details>
     </div>
   </div>
 </section>
@@ -207,7 +207,7 @@ footer a { color: var(--white); }
 <footer>
   <div class="inner">
     <span class="brand-foot"><svg class="mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="0" y="0" width="8" height="8" rx="2" fill="#c6f432" opacity="0.35"/><rect x="9" y="0" width="8" height="8" rx="2" fill="#c6f432" opacity="1"/><rect x="18" y="0" width="8" height="8" rx="2" fill="#c6f432" opacity="0.6"/><rect x="0" y="9" width="8" height="8" rx="2" fill="#c6f432" opacity="1"/><rect x="9" y="9" width="8" height="8" rx="2" fill="#c6f432" opacity="0.6"/><rect x="18" y="9" width="8" height="8" rx="2" fill="#c6f432" opacity="1"/><rect x="0" y="18" width="8" height="8" rx="2" fill="#c6f432" opacity="0.6"/><rect x="9" y="18" width="8" height="8" rx="2" fill="#c6f432" opacity="0.25"/><rect x="18" y="18" width="8" height="8" rx="2" fill="#c6f432" opacity="1"/></svg><span>agent-wrapped is open source on <a href="https://github.com/openyard-cloud/agent-wrapped">GitHub</a>, MIT licensed.</span></span>
-    <span>Shared on <a href="https://openyard.cloud">OpenYard</a>. Not affiliated with Anthropic.</span>
+    <span>Shared on <a href="https://openyard.cloud">OpenYard</a>. Not affiliated with Anthropic or OpenAI.</span>
   </div>
 </footer>
 <script>

@@ -1,7 +1,7 @@
 {
   "name": "agent-wrapped",
   "version": "0.1.0",
-  "description": "Your year with Claude Code, Spotify Wrapped style. Made from the history on your computer; nothing is uploaded.",
+  "description": "Your year with Claude Code and Codex, Spotify Wrapped style. Made from the history on your computer; nothing is uploaded.",
   "type": "module",
   "bin": {
     "agent-wrapped": "bin/agent-wrapped.mjs"
@@ -23,6 +23,7 @@
   },
   "keywords": [
     "claude-code",
+    "codex",
     "wrapped",
     "year-in-review",
     "stats",
