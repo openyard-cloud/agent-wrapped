@@ -67,7 +67,39 @@ p { margin: 0; max-width: 58ch; }
 /* The card */
 .card-band { background: var(--lime); }
 .card-band .inner { display: grid; gap: 40px; }
-.card-band img { width: 100%; height: auto; display: block; border-radius: 18px; box-shadow: 0 30px 70px rgba(20, 23, 28, 0.28); }
+/* The card itself, live HTML on a 1200 by 675 grid: 1u is one pixel of the PNG, whatever the width. */
+.card-stage { container-type: inline-size; }
+.wcard { --u: calc(100cqw / 1200); --cl: 198, 244, 50; margin: 0; aspect-ratio: 1200 / 675; position: relative; overflow: hidden; background: #101418; color: #f3f1ea; border-radius: 18px; box-shadow: 0 30px 70px rgba(20, 23, 28, 0.28); padding: calc(56 * var(--u)); line-height: 1; }
+.wc-in { display: flex; flex-direction: column; height: 100%; }
+.wcard p { margin: 0; max-width: none; }
+.wc-demo { position: absolute; top: calc(22 * var(--u)); right: calc(56 * var(--u)); color: var(--tomato); font-size: calc(20 * var(--u)); font-weight: 700; text-transform: uppercase; }
+.wc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: calc(24 * var(--u)); }
+.wc-kicker { color: var(--lime); font-size: calc(24 * var(--u)); font-weight: 700; text-transform: uppercase; }
+.wc-title { margin-top: calc(14 * var(--u)) !important; font-size: calc(92 * var(--u)); font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+.wd { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.16em; margin-bottom: -0.16em; }
+.wd > span { display: inline-block; }
+.wc-why { margin-top: calc(16 * var(--u)) !important; font-size: calc(26 * var(--u)); font-weight: 500; color: rgba(243, 241, 234, 0.8); }
+.wc-year { margin-top: calc(28 * var(--u)); font-size: calc(120 * var(--u)); font-weight: 800; letter-spacing: -0.02em; color: var(--lime); opacity: 0.16; }
+.wc-heat { position: relative; margin-top: calc(34 * var(--u)); display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, auto); grid-template-columns: repeat(var(--weeks), minmax(0, 1fr)); gap: calc(3 * var(--u)); }
+.wc-heat i { aspect-ratio: 1; border-radius: calc(2 * var(--u)); background: rgba(var(--cl), 0.09); }
+.wc-heat i.x { visibility: hidden; }
+.wc-heat i.l1 { background: rgba(var(--cl), 0.35); }
+.wc-heat i.l2 { background: rgba(var(--cl), 0.55); }
+.wc-heat i.l3 { background: rgba(var(--cl), 0.78); }
+.wc-heat i.l4 { background: rgb(var(--cl)); }
+.wc-head { position: absolute; inset: calc(-8 * var(--u)) 0; pointer-events: none; opacity: 0; }
+.wc-head::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: calc(3 * var(--u)); border-radius: 2px; background: #f3f1ea; box-shadow: 0 0 calc(14 * var(--u)) calc(2 * var(--u)) rgba(var(--cl), 0.7); }
+.wc-months { position: relative; height: calc(16 * var(--u)); margin-top: calc(8 * var(--u)); font-size: calc(15 * var(--u)); font-weight: 500; color: rgba(243, 241, 234, 0.55); }
+.wc-months span { position: absolute; left: calc(var(--w) * (100% + 3 * var(--u)) / var(--weeks)); }
+.wc-stats { margin-top: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.wc-stats b { display: block; font-size: calc(58 * var(--u)); font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+.wc-stats div > span { display: block; margin-top: calc(10 * var(--u)); font-size: calc(22 * var(--u)); font-weight: 500; color: rgba(243, 241, 234, 0.7); }
+.wc-fav { overflow: hidden; padding-bottom: 0.1em; margin-bottom: -0.1em; }
+.wc-fav span { display: inline-block; }
+.wc-rule { height: calc(2 * var(--u)); margin-top: calc(36 * var(--u)); background: rgba(var(--cl), 0.3); }
+.wc-foot { margin-top: calc(30 * var(--u)); display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.wc-foot b { color: var(--lime); font-size: calc(24 * var(--u)); font-weight: 700; }
+.wc-foot span { font-size: calc(19 * var(--u)); font-weight: 500; color: rgba(243, 241, 234, 0.6); }
 .card-copy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: end; }
 .card-copy p { font-size: 20px; line-height: 1.45; }
 
@@ -113,16 +145,45 @@ footer a { color: var(--white); }
   actions; custom easing, never bare ease; transform/opacity/filter only; everything off for reduced motion.
 */
 :root { --ease-out: cubic-bezier(0.22, 1, 0.36, 1); --ease-press: cubic-bezier(0.2, 0, 0, 1); }
-@keyframes materialize { from { opacity: 0; transform: translateY(10px); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes word-up { from { transform: translateY(130%); } to { transform: none; } }
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @keyframes phone-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
-.hero h1 { animation: materialize 700ms var(--ease-out) both; }
-.hero .lead { animation: rise 560ms var(--ease-out) 140ms both; }
-.hero .cmd, .hero .under { animation: rise 560ms var(--ease-out) 220ms both; }
-.phone-wrap { animation: phone-rise 800ms var(--ease-out) 260ms both; }
-/* The scroll moment: the card is dealt onto its band, once. Without JS it is simply there. */
-.js .card-band img { opacity: 0; transform: translateY(36px) rotate(-1.5deg) scale(0.97); transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); }
-.js .card-band img.in { opacity: 1; transform: none; }
+/* The headline comes up out of its own lines, word by word. */
+.hero h1 .wd > span { animation: word-up 820ms var(--ease-out) calc(60ms + var(--i) * 55ms) both; }
+.hero .lead { animation: rise 640ms var(--ease-out) 420ms both; }
+.hero .cmd { animation: rise 640ms var(--ease-out) 500ms both; }
+.hero .under { animation: rise 640ms var(--ease-out) 560ms both; }
+.phone-wrap { animation: phone-rise 1000ms var(--ease-out) 300ms both; }
+/*
+  The scroll moment: the card plays its own year. It is dealt onto the band, the label comes up, then a
+  playhead runs Jan to Dec and every week lands behind it while active days, tokens and the streak count up in step.
+  Timings live in --t0 (sweep start) and --step (one week), shared with the script. Without JS it is just the card.
+*/
+.wcard { --t0: 1000ms; --step: 24ms; --cell: 460ms; }
+.js .wcard { opacity: 0; transform: translateY(48px) rotate(-1.2deg) scale(0.97); }
+.js .wcard.play { animation: deal 1000ms var(--ease-out) both; }
+@keyframes deal { from { opacity: 0; transform: translateY(48px) rotate(-1.2deg) scale(0.97); } 40% { opacity: 1; } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes year-in { from { opacity: 0; transform: translateX(calc(40 * var(--u))); } to { opacity: 0.16; transform: none; } }
+@keyframes cell { from { opacity: 0; transform: scale(0.15); } 55% { opacity: 1; } to { opacity: 1; transform: none; } }
+@keyframes head { 0% { opacity: 0; transform: translateX(0); } 6% { opacity: 1; } 94% { opacity: 1; } 100% { opacity: 0; transform: translateX(100%); } }
+@keyframes draw { from { transform: scaleX(0); } to { transform: none; } }
+.js .wcard .wd > span, .js .wcard .wc-fav span { transform: translateY(130%); }
+.js .wcard :is(.wc-kicker, .wc-why, .wc-year, .wc-heat i, .wc-months span, .wc-stats div > *, .wc-foot, .wc-demo) { opacity: 0; }
+.js .wcard .wc-rule { transform: scaleX(0); transform-origin: left center; }
+.wcard.play .wc-kicker { animation: rise 600ms var(--ease-out) 300ms both; }
+.wcard.play .wd > span { animation: word-up 760ms var(--ease-out) calc(380ms + var(--i) * 90ms) both; }
+.wcard.play .wc-why { animation: rise 600ms var(--ease-out) 650ms both; }
+.wcard.play .wc-year { animation: year-in 1100ms var(--ease-out) 450ms both; }
+.wcard.play .wc-demo { animation: fade 400ms var(--ease-out) 600ms both; }
+.wcard.play .wc-heat i { animation: cell var(--cell) cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--t0) + var(--w) * var(--step)) both; }
+.wcard.play .wc-head { animation: head calc(var(--weeks) * var(--step) + 120ms) linear var(--t0) both; }
+.wcard.play .wc-months span { animation: fade 500ms var(--ease-out) calc(var(--t0) + var(--w) * var(--step) + 100ms) both; }
+.wcard.play .wc-stats div > * { animation: rise 600ms var(--ease-out) calc(var(--t0) - 100ms) both; }
+.wcard.play .wc-fav span { animation: word-up 700ms var(--ease-out) calc(var(--t0) + var(--weeks) * var(--step)) both; }
+.wcard.play .wc-rule { animation: draw 900ms var(--ease-out) calc(var(--t0) + var(--weeks) * var(--step) - 200ms) both; }
+.wcard.play .wc-foot { animation: rise 600ms var(--ease-out) calc(var(--t0) + var(--weeks) * var(--step) + 150ms) both; }
+.wc-stats b { font-variant-numeric: tabular-nums; }
 /* Feedback for actions: press, hover, the copied label, an opened answer. */
 .cmd button { transition: transform 120ms var(--ease-press), background-color 160ms var(--ease-out); }
 .cmd button:hover { background: #d4ff52; }
@@ -134,7 +195,6 @@ details[open] p { animation: answer-in 200ms var(--ease-out); }
 @keyframes answer-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-  .js .card-band img { opacity: 1; transform: none; }
 }
 
 @media (max-width: 980px) {
@@ -170,7 +230,7 @@ details[open] p { animation: answer-in 200ms var(--ease-out); }
 
   <header class="hero">
     <div>
-      <h1>Your year with Claude Code and Codex, wrapped</h1>
+      <h1><span class="wd"><span style="--i:0">Your</span></span> <span class="wd"><span style="--i:1">year</span></span> <span class="wd"><span style="--i:2">with</span></span> <span class="wd"><span style="--i:3">Claude</span></span> <span class="wd"><span style="--i:4">Code</span></span> <span class="wd"><span style="--i:5">and</span></span> <span class="wd"><span style="--i:6">Codex,</span></span> <span class="wd"><span style="--i:7">wrapped</span></span></h1>
       <p class="lead">One command turns the history already on your computer into a short story and a card you can post. Nothing is uploaded.</p>
       <div class="cmd"><code>npx github:openyard-cloud/agent-wrapped</code><button type="button" data-copy="npx github:openyard-cloud/agent-wrapped"><span>Copy</span></button></div>
       <p class="under">Needs Node 18 or newer. No account, no API key.</p>
@@ -184,7 +244,7 @@ details[open] p { animation: answer-in 200ms var(--ease-out); }
 
 <section class="band card-band">
   <div class="inner">
-    <img src="/card.png" width="1200" height="675" alt="A share card: My 2026 with Claude Code and Codex, The Night Owl, a heatmap of the whole year, 257 active days, 170M tokens, a 19-day streak, favourite model Opus 4.8. Demo data." loading="lazy">
+    <div class="card-stage"><!-- CARD --></div>
     <div class="card-copy">
       <h2>The last slide is a card you can post</h2>
       <p>Your label, your year as a heatmap, active days, tokens, your longest streak and your favourite model. Sized 1200 by 675 for X and LinkedIn, saved as a PNG with one button.</p>
@@ -259,11 +319,44 @@ document.querySelectorAll("[data-copy]").forEach(function (b) {
     });
   });
 });
-// The scroll moment: deal the card in once, when it is a quarter on screen.
-var card = document.querySelector(".card-band img");
+// The scroll moment: the card plays its year once, when 40% of it is on screen.
+var card = document.querySelector(".wcard");
 if (card) {
-  if (reduce || !("IntersectionObserver" in window)) card.classList.add("in");
-  else { var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { card.classList.add("in"); io.disconnect(); } }); }, { threshold: 0.25 }); io.observe(card); }
+  var heat = card.querySelector(".wc-heat"), headEl = document.createElement("span");
+  headEl.className = "wc-head"; heat.appendChild(headEl);
+  var fmt = function (n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(n >= 1e10 ? 0 : 1) + "B";
+    if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + "M";
+    if (n >= 1e4) return Math.round(n / 1e3) + "K";
+    return Math.round(n).toLocaleString("en-US");
+  };
+  var playCard = function () {
+    card.classList.add("play");
+    if (reduce) return;
+    var cs = getComputedStyle(card), T0 = parseFloat(cs.getPropertyValue("--t0")), STEP = parseFloat(cs.getPropertyValue("--step"));
+    var days = card.dataset.days.split(",").map(Number), share = card.dataset.share.split(",").map(Number), streaks = card.dataset.streaks.split(",").map(Number), W = days.length;
+    var el = function (k) { return card.querySelector('[data-count="' + k + '"]'); };
+    var d = el("days"), t = el("tokens"), s = el("streak");
+    var finals = [d.textContent, t.textContent, s.textContent], TOK = +t.dataset.to;
+    var start = performance.now(), last = -2;
+    var frame = function (now) {
+      // A week counts once its cells are mostly in, about a third of the way into their pop.
+      var w = Math.min(W - 1, Math.floor((now - start - T0 - 150) / STEP));
+      if (w !== last) {
+        last = w;
+        if (w < 0) { d.textContent = "0"; t.textContent = "0"; s.textContent = "0 days"; }
+        else {
+          d.textContent = days[w].toLocaleString("en-US"); t.textContent = fmt(TOK * share[w]);
+          var n = streaks[w]; s.textContent = n + (n === 1 ? " day" : " days");
+        }
+      }
+      if (w < W - 1) requestAnimationFrame(frame);
+      else { d.textContent = finals[0]; t.textContent = finals[1]; s.textContent = finals[2]; }
+    };
+    requestAnimationFrame(frame);
+  };
+  if (reduce || !("IntersectionObserver" in window)) card.classList.add("play");
+  else { var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { io.disconnect(); playCard(); } }, { threshold: 0.4 }); io.observe(card); }
 }
 // The demo plays itself once the phone is in view (after the hero has settled). A tap hands it to the viewer.
 var frame = document.querySelector(".phone iframe");
