@@ -1,0 +1,4 @@
+node_modules/
+agent-wrapped-*.html
+*.log
+.DS_Store

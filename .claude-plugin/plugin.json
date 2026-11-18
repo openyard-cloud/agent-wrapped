@@ -1,0 +1,10 @@
+{
+  "name": "agent-wrapped",
+  "version": "0.1.0",
+  "description": "/wrapped: your year with Claude Code, Spotify Wrapped style, made from the history on your computer.",
+  "author": { "name": "OpenYard" },
+  "homepage": "https://github.com/openyard-cloud/agent-wrapped",
+  "repository": "https://github.com/openyard-cloud/agent-wrapped",
+  "license": "MIT",
+  "keywords": ["wrapped", "year-in-review", "stats"]
+}

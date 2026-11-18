@@ -1,0 +1,14 @@
+{
+  "name": "agent-wrapped",
+  "version": "0.1.0",
+  "description": "Your year with Claude Code, Spotify Wrapped style. Made from the history on your computer; nothing is uploaded.",
+  "type": "module",
+  "bin": { "agent-wrapped": "bin/agent-wrapped.mjs" },
+  "files": ["bin", "src", "fonts", "README.md", "LICENSE"],
+  "engines": { "node": ">=18" },
+  "scripts": { "test": "node --test test/" },
+  "keywords": ["claude-code", "wrapped", "year-in-review", "stats", "ai-agents", "cli"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/openyard-cloud/agent-wrapped.git" },
+  "homepage": "https://github.com/openyard-cloud/agent-wrapped#readme"
+}

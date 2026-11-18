@@ -1,0 +1,7 @@
+{
+  "name": "agent-wrapped",
+  "owner": { "name": "OpenYard" },
+  "plugins": [
+    { "name": "agent-wrapped", "source": "./", "description": "/wrapped: your year with Claude Code, made from the history on your computer." }
+  ]
+}
