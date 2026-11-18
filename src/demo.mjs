@@ -33,5 +33,17 @@ export function demoSummary(year = new Date().getFullYear()) {
   acc.sessions.set("demo", { first: Date.parse(`${year}-09-14T01:00:00Z`), last: 0, activeMs: 11.5 * 3.6e6, prompts: 210, messages: 6120, cost: 18420, linesAdded: 412880, linesRemoved: 160214, cwd: "/home/demo/app", startHour: 1 });
   for (let i = 0; i < 37; i++) acc.sessions.set("p" + i, { first: Date.parse(`${year}-10-01T10:00:00Z`), last: 0, activeMs: 3.6e6, prompts: 1, messages: 1, cost: 0, linesAdded: 0, linesRemoved: 0, cwd: "/home/demo/p" + i, startHour: -1 });
   acc.subagentMessages = 21000;
-  return summarize({ acc, cache, year, now: Date.parse(`${year}-12-01T09:00:00Z`) });
+  // A few months of Codex on the side, so the demo shows both agents.
+  const codex = emptyAcc();
+  for (let d = new Date(year, 7, 4); d.getMonth() < 11; d.setDate(d.getDate() + 3)) {
+    const date = `${year}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const tokens = Math.round(180000 + r() * 420000), turns = 20 + Math.round(r() * 60);
+    codex.days.set(date, { messages: turns, prompts: Math.round(turns / 4), sessions: new Set(["x" + date]), toolCalls: Math.round(turns * 0.8), tokens });
+    codex.modelDays.set(`${date}|gpt-5.6-sol`, tokens);
+    const m = codex.models.get("gpt-5.6-sol") || { tokens: 0, messages: 0, first: date, last: date };
+    m.tokens += tokens; m.messages += turns; m.last = date;
+    codex.models.set("gpt-5.6-sol", m);
+  }
+  codex.tools.set("Shell", 9100); codex.tools.set("apply_patch", 4300);
+  return summarize({ acc, cache, year, now: Date.parse(`${year}-12-01T09:00:00Z`), extra: [{ agent: "Codex", acc: codex }] });
 }

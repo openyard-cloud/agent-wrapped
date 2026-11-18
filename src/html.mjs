@@ -21,7 +21,7 @@ export function renderHtml(summary, { demo = false, font = fontBase64() } = {}) 
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Your ${summary.year} with Claude Code · agent-wrapped</title>
+<title>Your ${summary.year} with ${summary.agentsLabel || "Claude Code"} · agent-wrapped</title>
 <style>
 @font-face { font-family: "Bricolage"; src: url(data:font/woff2;base64,${font}) format("woff2"); font-weight: 200 800; font-display: block; }
 :root {
@@ -88,6 +88,8 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 (function () {
   "use strict";
   var D = JSON.parse(document.getElementById("data").textContent);
+  var WHO = D.agentsLabel || "Claude Code";
+  var HAS_CLAUDE = !D.agents || D.agents.indexOf("Claude Code") >= 0;
   try { if (window.self !== window.top) document.documentElement.classList.add("embedded"); } catch (e) { document.documentElement.classList.add("embedded"); }
   var story = document.getElementById("story"), bars = document.getElementById("bars");
 
@@ -133,7 +135,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
   var slides = [
     { bg: "var(--ink)", fg: "var(--lime)", build: function () { return [
       el("div", { class: "kicker", text: "agent-wrapped · " + D.year }),
-      el("h1", { text: "Your " + D.year + " with Claude Code" }),
+      el("h1", { text: "Your " + D.year + " with " + WHO }),
       el("p", { class: "lead", text: "A year of prompts, tool calls and late nights, counted on your own machine." }),
       el("p", { class: "note", text: coverNote }) ]; } },
     { bg: "var(--lime)", fg: "var(--ink)", build: function () { return [
@@ -150,7 +152,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       el("h2", { text: D.activeDays + " days lit up" }),
       heatEl(),
       el("p", { class: "lead", style: "color:var(--paper)", text: D.busiest ? "The brightest square is " + dayLabel(D.busiest.date) + ": " + plain(D.busiest.messages) + " messages." : "" }),
-      el("p", { class: "note", style: "color:var(--paper)", text: "Claude Code deletes transcripts after 30 days unless you change cleanupPeriodDays, so earlier months may look quieter than they were." }) ]; } },
+      HAS_CLAUDE ? el("p", { class: "note", style: "color:var(--paper)", text: "Claude Code deletes transcripts after 30 days unless you change cleanupPeriodDays, so earlier months may look quieter than they were." }) : null ]; } },
     { bg: "var(--tomato)", fg: "var(--ink)", build: function () { return [
       el("div", { class: "kicker", text: "Words, in and out" }),
       el("div", { class: "big", text: fmt(D.tokens) }),
@@ -200,7 +202,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       var save = el("button", { text: "Save image" }), copy = el("button", { class: "ghost", text: "Copy text" });
       save.addEventListener("click", function () { canvas.toBlob(function (b) { var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "agent-wrapped-" + D.year + ".png"; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }, "image/png"); });
       copy.addEventListener("click", function () {
-        var t = "My " + D.year + " with Claude Code: " + D.persona.title + ". " + D.activeDays + " active days, " + plain(D.sessions) + " sessions, " + fmt(D.tokens) + " tokens" + (fav ? ", mostly " + fav.name : "") + ". Make yours: wrapped.openyard.cloud";
+        var t = "My " + D.year + " with " + WHO + ": " + D.persona.title + ". " + D.activeDays + " active days, " + plain(D.sessions) + " sessions, " + fmt(D.tokens) + " tokens" + (fav ? ", mostly " + fav.name : "") + ". Make yours: wrapped.openyard.cloud";
         (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { copy.textContent = "Copied"; }, function () { window.prompt("Copy this:", t); });
       });
       document.fonts.load('800 40px "Bricolage"').then(function () { drawCard(canvas); }, function () { drawCard(canvas); });
@@ -218,7 +220,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
     var L = 56, R = W - 56;
     x.fillStyle = C.ink; x.fillRect(0, 0, W, H);
     // Top: who you were this year, with the year as the big number on the right.
-    x.fillStyle = C.lime; x.font = "700 24px " + F; x.fillText("MY " + D.year + " WITH CLAUDE CODE", L, 76);
+    x.fillStyle = C.lime; x.font = "700 24px " + F; fitLine(x, "MY " + D.year + " WITH " + WHO.toUpperCase(), L, 76, 760, 24, "700");
     x.fillStyle = C.paper; x.font = "800 92px " + F; fitText(x, D.persona.title, L, 166, 760, 92, F);
     x.fillStyle = "rgba(243,241,234,.8)"; x.font = "500 26px " + F; fitLine(x, D.persona.why, L, 210, 800, 26, "500");
     x.fillStyle = C.lime; x.font = "800 120px " + F;

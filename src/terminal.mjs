@@ -22,9 +22,10 @@ export function terminalSummary(s, { file } = {}) {
     ["Top tool", s.tools[0] ? s.tools[0].name : "–"],
     ["Jan … Dec", lime(monthStrip(s.heatmap, s.year))],
   ];
-  const out = ["", `  ${lime(bold(`Your ${s.year} with Claude Code`))}`, `  ${bold(s.persona.title)} ${dim("· " + s.persona.why)}`, ""];
+  const out = ["", `  ${lime(bold(`Your ${s.year} with ${s.agentsLabel || "Claude Code"}`))}`, `  ${bold(s.persona.title)} ${dim("· " + s.persona.why)}`, ""];
   for (const [k, v] of rows) out.push(`  ${dim(k.padEnd(16))}${v}`);
   out.push("", `  ${dim(`Based on ${s.activeDays} active days of local history, ${s.coverage.from || "–"} to ${s.coverage.to || "–"}.`)}`);
+  if (s.skippedCompressed) out.push(`  ${dim(`${s.skippedCompressed} older Codex sessions are compressed and were skipped. Node 22.15 or newer can read them.`)}`);
   if (file) out.push(`  ${dim("Your story and card:")} ${file}`);
   out.push("");
   return out.join("\n");

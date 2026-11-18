@@ -21,11 +21,24 @@ const LANG = {
   ".ipynb": "Notebook", ".tf": "Terraform", ".prisma": "Prisma", ".graphql": "GraphQL",
 };
 
-/** Model id to a short display name: claude-opus-5-5 -> Opus 5.5, claude-sonnet-4-5-20250929 -> Sonnet 4.5. */
+const cap = w => w ? w[0].toUpperCase() + w.slice(1) : w;
+
+/**
+ * Model id to a short display name:
+ * claude-opus-5-5 -> Opus 5.5, claude-sonnet-4-5-20250929 -> Sonnet 4.5, gpt-5.6-sol -> GPT-5.6 Sol, gpt-5-codex -> GPT-5 Codex.
+ */
 export function modelName(id) {
   const m = /^claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?:-\d{8})?$/.exec(id);
-  if (!m) return id;
-  return `${m[1][0].toUpperCase()}${m[1].slice(1)} ${m[2]}${m[3] ? "." + m[3] : ""}`;
+  if (m) return `${cap(m[1])} ${m[2]}${m[3] ? "." + m[3] : ""}`;
+  const g = /^gpt-(\d+(?:\.\d+)?)(?:-(.+?))?(?:-\d{4}-\d{2}-\d{2})?$/.exec(id);
+  if (g) return `GPT-${g[1]}${g[2] ? " " + g[2].split("-").map(cap).join(" ") : ""}`;
+  return id;
+}
+
+/** "Claude Code", "Codex", or "Claude Code and Codex", for titles and the card. */
+export function agentsLabel(agents) {
+  if (!agents.length) return "your coding agent";
+  return agents.length === 1 ? agents[0] : agents.slice(0, -1).join(", ") + " and " + agents[agents.length - 1];
 }
 
 function top(map, n, label = x => x) {
@@ -52,7 +65,12 @@ function coverage(dates) {
   return { from: s[0] || null, to: s[s.length - 1] || null };
 }
 
-export function summarize({ acc, cache, year, now = Date.now() }) {
+/**
+ * acc: Claude Code transcripts, merged with its /stats cache.
+ * extra: other agents' accumulators, e.g. [{ agent: "Codex", acc }]. They share no days with Claude Code's
+ * cache, so they are added on top after that merge.
+ */
+export function summarize({ acc, cache, year, now = Date.now(), extra = [] }) {
   const y = String(year);
   const days = new Map(); // date -> { messages, sessions, toolCalls, tokens, source }
   const cacheUntil = cache?.lastComputedDate || null;
@@ -80,6 +98,13 @@ export function summarize({ acc, cache, year, now = Date.now() }) {
     if (!cur) days.set(date, t);
     else days.set(date, { messages: Math.max(cur.messages, t.messages), sessions: Math.max(cur.sessions, t.sessions), toolCalls: Math.max(cur.toolCalls, t.toolCalls), tokens: Math.max(cur.tokens, t.tokens), source: "both" });
   }
+  // 3. Other agents, added on top.
+  for (const { acc: x } of extra) {
+    for (const [date, d] of x.days) {
+      const cur = days.get(date) || { messages: 0, sessions: 0, toolCalls: 0, tokens: 0, source: "transcripts" };
+      days.set(date, { messages: cur.messages + d.messages, sessions: cur.sessions + d.sessions.size, toolCalls: cur.toolCalls + d.toolCalls, tokens: cur.tokens + d.tokens, source: cur.source });
+    }
+  }
   const cacheModelDays = new Set((cache?.dailyModelTokens || []).map(d => d.date));
   for (const [m, v] of acc.models) if (!modelFirst.has(m) || v.first < modelFirst.get(m)) modelFirst.set(m, v.first);
   // Transcript tokens per model only for days the cache does not have, so nothing is counted twice.
@@ -88,6 +113,13 @@ export function summarize({ acc, cache, year, now = Date.now() }) {
     if (cacheModelDays.has(date)) continue;
     modelTokens.set(m, (modelTokens.get(m) || 0) + t);
   }
+  for (const { acc: x } of extra) {
+    for (const [m, v] of x.models) if (!modelFirst.has(m) || v.first < modelFirst.get(m)) modelFirst.set(m, v.first);
+    for (const [key, t] of x.modelDays) { const m = key.split("|")[1]; modelTokens.set(m, (modelTokens.get(m) || 0) + t); }
+  }
+  const all = [acc, ...extra.map(e => e.acc)];
+  const mergeMaps = k => { const out = new Map(); for (const a of all) for (const [n, v] of a[k]) out.set(n, (out.get(n) || 0) + v); return out; };
+  const allTools = mergeMaps("tools"), allExts = mergeMaps("exts");
   const activeDates = [...days].filter(([, d]) => d.messages + d.tokens + d.toolCalls > 0).map(([k]) => k);
   const total = k => [...days.values()].reduce((a, d) => a + d[k], 0);
 
@@ -100,29 +132,32 @@ export function summarize({ acc, cache, year, now = Date.now() }) {
   const hours = Array(24).fill(0);
   for (const [h, n] of Object.entries(cache?.hourCounts || {})) if (cache?.firstSessionDate?.startsWith(y) || !cache?.firstSessionDate) hours[+h] += n;
   for (const s of acc.sessions.values()) if (s.startHour >= 0 && (!cacheUntil || localDate(s.first) > cacheUntil)) hours[s.startHour]++;
+  for (const { acc: x } of extra) for (const s of x.sessions.values()) if (s.startHour >= 0) hours[s.startHour]++;
   const peakHour = hours.some(Boolean) ? hours.indexOf(Math.max(...hours)) : null;
   const nightShare = hours.reduce((a, n, h) => a + (h >= 22 || h < 5 ? n : 0), 0) / (hours.reduce((a, b) => a + b, 0) || 1);
   const morningShare = hours.reduce((a, n, h) => a + (h >= 5 && h < 9 ? n : 0), 0) / (hours.reduce((a, b) => a + b, 0) || 1);
 
   // Sessions from transcripts: active time, cost, lines, projects.
-  const sessions = [...acc.sessions.values()];
+  const sessions = all.flatMap(a => [...a.sessions.values()]);
   const longest = sessions.reduce((best, s) => (s.activeMs > (best?.activeMs || 0) ? s : best), null);
   const cacheLongest = cache?.longestSession?.timestamp?.startsWith(y) ? cache.longestSession : null;
   const projects = new Set(sessions.map(s => s.cwd).filter(c => c && !TEMP.test(c)));
   const cost = sessions.reduce((a, s) => a + s.cost, 0);
   const linesAdded = sessions.reduce((a, s) => a + s.linesAdded, 0);
   const linesRemoved = sessions.reduce((a, s) => a + s.linesRemoved, 0);
-  const transcriptDates = [...acc.days.keys()].sort();
+  const transcriptDates = all.flatMap(a => [...a.days.keys()]).sort();
 
-  const tools = top(acc.tools, 6, toolLabel);
-  const languages = top(new Map([...acc.exts].filter(([e]) => LANG[e])), 5, e => LANG[e]);
-  const toolTotal = [...acc.tools.values()].reduce((a, b) => a + b, 0) || 1;
-  const share = names => names.reduce((a, n) => a + (acc.tools.get(n) || 0), 0) / toolTotal;
+  const tools = top(allTools, 6, toolLabel);
+  const languages = top(new Map([...allExts].filter(([e]) => LANG[e])), 5, e => LANG[e]);
+  const toolTotal = [...allTools.values()].reduce((a, b) => a + b, 0) || 1;
+  const share = names => names.reduce((a, n) => a + (allTools.get(n) || 0), 0) / toolTotal;
 
   const streak = longestStreak(activeDates);
   const busiest = [...days].sort((a, b) => b[1].messages - a[1].messages)[0];
-  const contextTokens = (cache?.firstSessionDate?.startsWith(y) ? Object.values(cache?.modelUsage || {}).reduce((a, u) => a + (u.cacheReadInputTokens || 0), 0) : 0) + acc.cacheReadTokens;
+  const contextTokens = (cache?.firstSessionDate?.startsWith(y) ? Object.values(cache?.modelUsage || {}).reduce((a, u) => a + (u.cacheReadInputTokens || 0), 0) : 0) + all.reduce((a, x) => a + x.cacheReadTokens, 0);
 
+  const hasClaude = acc.days.size > 0 || (cache?.dailyActivity || []).some(d => d.date?.startsWith(y));
+  const agents = [...(hasClaude ? ["Claude Code"] : []), ...extra.filter(e => e.acc.days.size > 0).map(e => e.agent)];
   const s = {
     year, generatedAt: new Date(now).toISOString(),
     coverage: { ...coverage(activeDates), cacheUntil, transcripts: coverage(transcriptDates) },
@@ -141,8 +176,11 @@ export function summarize({ acc, cache, year, now = Date.now() }) {
     projects: projects.size,
     cost, linesAdded, linesRemoved,
     tools, languages,
-    subagentMessages: acc.subagentMessages,
-    shares: { bash: share(["Bash"]), read: share(["Read", "Grep", "Glob", "LS"]), edit: share(["Edit", "Write", "MultiEdit", "NotebookEdit"]), agents: share(["Task", "Agent"]), web: share(["WebFetch", "WebSearch"]) },
+    subagentMessages: all.reduce((a, x) => a + x.subagentMessages, 0),
+    shares: { bash: share(["Bash", "Shell"]), read: share(["Read", "Grep", "Glob", "LS"]), edit: share(["Edit", "Write", "MultiEdit", "NotebookEdit", "apply_patch"]), agents: share(["Task", "Agent"]), web: share(["WebFetch", "WebSearch", "Web search"]) },
+    agents,
+    agentsLabel: agentsLabel(agents),
+    skippedCompressed: extra.reduce((a, e) => a + (e.acc.skippedCompressed || 0), 0),
   };
   s.persona = persona(s);
   return s;

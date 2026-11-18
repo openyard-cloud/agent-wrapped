@@ -1,6 +1,6 @@
 # agent-wrapped
 
-**Your year with Claude Code, Spotify Wrapped style.** Made from the history already on your computer. Nothing is uploaded.
+**Your year with Claude Code and Codex, Spotify Wrapped style.** Made from the history already on your computer. Nothing is uploaded.
 
 **[wrapped.openyard.cloud](https://wrapped.openyard.cloud)** · [try the demo story](https://wrapped.openyard.cloud/demo)
 
@@ -8,9 +8,9 @@
 npx github:openyard-cloud/agent-wrapped
 ```
 
-It runs straight from this repository. A short `npx agent-wrapped` will work once the package is on npm; until then, use the command above, which only ever runs this repository.
+It reads whichever agents it finds: Claude Code, Codex, or both on one card. It runs straight from this repository. A short `npx agent-wrapped` will work once the package is on npm; until then, use the command above, which only ever runs this repository.
 
-![A share card: "The Night Owl", a heatmap of the whole year, 248 active days, 155M tokens, a 14-day streak, favourite model Opus 4.8. Made from demo data.](https://raw.githubusercontent.com/openyard-cloud/agent-wrapped/main/assets/card-demo.png)
+![A share card: "My 2026 with Claude Code and Codex", The Night Owl, a heatmap of the whole year, 257 active days, 170M tokens, a 19-day streak, favourite model Opus 4.8. Made from demo data.](https://raw.githubusercontent.com/openyard-cloud/agent-wrapped/main/assets/card-demo.png)
 
 <sub>Demo data. Yours is made from your own history.</sub>
 
@@ -23,7 +23,7 @@ A short story you tap through in your browser, then a card you can save as an im
 - **The days you showed up:** active days, sessions, messages, tool calls, your longest streak and your busiest day.
 - **Your year as a heatmap:** every day of the year, like a GitHub contribution graph.
 - **Tokens:** what your agent wrote and read, and how much context it re-read from cache.
-- **Your model year:** every model you used, the day it first showed up, and your favourite.
+- **Your model year:** every model you used, Claude and GPT alike, the day it first showed up, and your favourite.
 - **When you worked:** sessions by hour, and a label for how you work: Night Owl, Early Bird, Orchestrator, Marathoner, Commander, Explorer, Builder, Researcher or Regular.
 - **What your agent reached for:** top tools and the languages it edited most.
 - **The big one:** your longest session, lines added and removed, and what your usage would cost at API prices.
@@ -32,12 +32,12 @@ A short story you tap through in your browser, then a card you can save as an im
 The terminal gets a short version too:
 
 ```
-  Your 2026 with Claude Code
+  Your 2026 with Claude Code and Codex
   The Night Owl · 40% of your sessions started between 10 pm and 5 am.
 
-  Active days     248  longest streak 14d
-  Sessions        966
-  Tokens          155.5M  + 9.2B re-read from cache
+  Active days     257  longest streak 19d
+  Sessions        1,006
+  Tokens          170.1M  + 9.2B re-read from cache
   Favourite model Opus 4.8
   Top tool        Bash
   Jan … Dec       ▆▆▅▇▅▇▆▇▆▇▇
@@ -62,9 +62,13 @@ Where both cover a day, the larger count wins, so nothing is counted twice. The 
 
 **Months missing?** Run `/stats` in Claude Code once (it refreshes the cache) and run agent-wrapped again. To keep transcripts for next year's Wrapped, set `"cleanupPeriodDays": 365` in `~/.claude/settings.json`.
 
+### Codex
+
+Codex keeps every session in `~/.codex/sessions/YYYY/MM/DD/` and moves archived ones to `~/.codex/archived_sessions`; agent-wrapped reads both. Older sessions may be compressed (`.jsonl.zst`): Node 22.15 or newer reads them, and on older Node the page says how many were skipped. Codex days are added on top of Claude Code's, and a forked session's copied history counts once. Set `CODEX_HOME` if yours lives elsewhere.
+
 **What the numbers mean:**
-- **Tokens** are input plus output, the same count `/stats` uses. Context re-read from cache is shown separately because it is far larger.
-- **Value at API prices** is Claude Code's own estimate of what the same usage would cost on the API. It is not what you paid on a subscription.
+- **Tokens** are input plus output, the same count `/stats` uses; for Codex, input without its cached part. Context re-read from cache is shown separately because it is far larger.
+- **Value at API prices** (Claude Code only) is Claude Code's own estimate of what the same usage would cost on the API. It is not what you paid on a subscription.
 - **Longest session** is active time: pauses over 30 minutes are left out, so a session left open overnight does not count as 12 hours.
 
 ## Options
@@ -72,6 +76,7 @@ Where both cover a day, the larger count wins, so nothing is counted twice. The 
 Add them after the command, for example `npx github:openyard-cloud/agent-wrapped --demo`.
 
 ```
+--agent codex     only one agent: claude or codex (default: all it finds)
 --year 2026       a different year
 --out card.html   where to write the page
 --no-open         write the page, don't open it
@@ -79,7 +84,7 @@ Add them after the command, for example `npx github:openyard-cloud/agent-wrapped
 --demo            made-up data, to see what it looks like
 ```
 
-If your Claude Code config lives somewhere else, set `CLAUDE_CONFIG_DIR`.
+If your Claude Code config lives somewhere else, set `CLAUDE_CONFIG_DIR`; for Codex, `CODEX_HOME`.
 
 ## As a Claude Code command
 
@@ -94,9 +99,9 @@ Then type `/wrapped` in any session.
 
 Node 18 or newer. No dependencies.
 
-## Not affiliated with Anthropic
+## Not affiliated with Anthropic or OpenAI
 
-agent-wrapped is an independent open-source project. Claude and Claude Code are products of Anthropic.
+agent-wrapped is an independent open-source project. Claude and Claude Code are products of Anthropic; Codex is a product of OpenAI.
 
 ## License
 

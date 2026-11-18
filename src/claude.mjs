@@ -58,19 +58,19 @@ export function emptyAcc() {
   };
 }
 
-function day(acc, date) {
+export function day(acc, date) {
   let d = acc.days.get(date);
   if (!d) acc.days.set(date, d = { messages: 0, prompts: 0, sessions: new Set(), toolCalls: 0, tokens: 0 });
   return d;
 }
 
-function session(acc, id) {
+export function session(acc, id) {
   let s = acc.sessions.get(id);
   if (!s) acc.sessions.set(id, s = { first: Infinity, last: -Infinity, activeMs: 0, prompts: 0, messages: 0, cost: 0, linesAdded: 0, linesRemoved: 0, cwd: "", startHour: -1 });
   return s;
 }
 
-function touch(acc, s, ts) {
+export function touch(acc, s, ts) {
   if (ts < s.first) { s.first = ts; s.startHour = new Date(ts).getHours(); }
   if (s.last > -Infinity && ts > s.last && ts - s.last < IDLE_GAP) s.activeMs += ts - s.last;
   if (ts > s.last) s.last = ts;
