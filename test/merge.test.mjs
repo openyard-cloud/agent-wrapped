@@ -87,3 +87,30 @@ test("merging keeps the earliest first use of a model and the longest session", 
   assert.deepEqual(m.agents, ["Claude Code", "Codex"]);
   assert.equal(a.models["claude-opus-5"].tokens, 10); // inputs are not changed
 });
+
+test("prompt history fills the days the cache and transcripts lost, and nothing else", () => {
+  const dir = claudeHome(["2026-10-20"]);
+  const at = (d, hm) => Date.parse(`${d}T${hm}:00`);
+  const hist = [
+    { display: "rotate the stripe key", timestamp: at("2026-09-03", "09:00"), project: "/home/me/secret-startup" },
+    { display: "now the tests", timestamp: at("2026-09-03", "09:10"), project: "/home/me/secret-startup" },
+    { display: "after lunch", timestamp: at("2026-09-03", "14:00"), project: "/home/me/secret-startup" },
+    { display: "same day as a transcript", timestamp: at("2026-10-20", "11:00"), project: "/home/me/secret-startup" },
+    { display: "last year", timestamp: at("2025-12-30", "11:00"), project: "/home/me/x" },
+  ];
+  fs.writeFileSync(path.join(dir, "history.jsonl"), hist.map(h => JSON.stringify(h)).join("\n") + "\n");
+  const r = run(["--year", "2026", "--json"], { CLAUDE_CONFIG_DIR: dir });
+  assert.equal(r.status, 0, r.stderr);
+  const s = JSON.parse(r.stdout);
+  assert.equal(s.activeDays, 2);
+  assert.equal(s.historyDays, 1);
+  assert.equal(s.heatmap["2026-09-03"], 3);   // three prompts
+  assert.equal(s.heatmap["2026-10-20"], 2);   // the transcript's count, not the history's
+  assert.equal(s.sessions, 1 + 2);             // a 30-minute gap starts a new session
+  assert.equal(s.projects, 1);
+  const out = path.join(dir, "page.html");
+  assert.equal(run(["--year", "2026", "--out", out, "--no-open"], { CLAUDE_CONFIG_DIR: dir }).status, 0);
+  const html = fs.readFileSync(out, "utf8");
+  for (const leak of ["stripe", "secret-startup", "after lunch"]) assert.ok(!html.includes(leak), `page leaks "${leak}"`);
+  fs.rmSync(dir, { recursive: true });
+});

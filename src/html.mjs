@@ -227,7 +227,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       words("h2", D.busiest ? dayLabel(D.busiest.date) + " was your biggest day" : D.activeDays + " days lit up", 100, 70),
       D.busiest ? A(el("p", { class: "small", style: "color:var(--paper)", text: plain(D.busiest.messages) + " messages back and forth, the brightest square below." }), 450) : null,
       monthsEl(),
-      HAS_CLAUDE ? el("p", { class: "note", style: "color:var(--paper)", text: "Claude Code deletes transcripts after 30 days unless you change cleanupPeriodDays, so earlier months may look quieter than they were." }) : null ]; } },
+      HAS_CLAUDE ? el("p", { class: "note", style: "color:var(--paper)", text: D.historyDays ? D.historyDays + " of these days come from your prompt history alone: Claude Code had already deleted their transcripts, so they count prompts, not replies or tokens." : "Claude Code deletes transcripts after 30 days unless you change cleanupPeriodDays, so earlier months may look quieter than they were." }) : null ]; } },
 
     { when: D.peakHour !== null, bg: "var(--sky)", fg: "var(--ink)", build: function () {
       var c = el("div", { class: "clock" }), max = Math.max.apply(null, D.hours) || 1;

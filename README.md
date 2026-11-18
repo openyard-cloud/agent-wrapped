@@ -57,8 +57,9 @@ Claude Code keeps two kinds of local history, and agent-wrapped merges them:
 |---|---|---|
 | `~/.claude/stats-cache.json` | Daily messages, sessions and tool calls, tokens per model, hours | Since your first session, but only up to the last time you ran `/stats` |
 | `~/.claude/projects/**/*.jsonl` | Every session in detail: tools, files edited, active time, cost, lines changed | **30 days by default.** Claude Code deletes older transcripts |
+| `~/.claude/history.jsonl` | The time and project of each prompt you typed (the text is never read into the page) | Not cleaned up, so it fills days the other two lost. Those days count prompts only: no tokens, models or tools |
 
-Where both cover a day, the larger count wins, so nothing is counted twice. The page says which dates it is based on.
+Where the cache and the transcripts both cover a day, the larger count wins, so nothing is counted twice; prompt history is used only for days neither has. The page says which dates it is based on.
 
 **Months missing?** Run `/stats` in Claude Code once (it refreshes the cache) and run agent-wrapped again. To keep transcripts for next year's Wrapped, set `"cleanupPeriodDays": 365` in `~/.claude/settings.json`.
 
