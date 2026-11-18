@@ -1,7 +1,16 @@
 {
   "name": "agent-wrapped",
-  "owner": { "name": "OpenYard" },
+  "owner": {
+    "name": "OpenYard"
+  },
+  "metadata": {
+    "description": "agent-wrapped: your year with Claude Code, Spotify Wrapped style, made from the history on your computer."
+  },
   "plugins": [
-    { "name": "agent-wrapped", "source": "./", "description": "/wrapped: your year with Claude Code, made from the history on your computer." }
+    {
+      "name": "agent-wrapped",
+      "source": "./",
+      "description": "/wrapped: your year with Claude Code, made from the history on your computer."
+    }
   ]
 }
