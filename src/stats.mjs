@@ -177,6 +177,9 @@ export function summarize({ acc, cache, year, now = Date.now(), extra = [] }) {
     cost, linesAdded, linesRemoved,
     tools, languages,
     subagentMessages: all.reduce((a, x) => a + x.subagentMessages, 0),
+    prompts: all.reduce((a, x) => a + [...x.days.values()].reduce((b, d) => b + (d.prompts || 0), 0), 0), // transcripts only
+    interrupts: all.reduce((a, x) => a + (x.interrupts || 0), 0),
+    weekdays: all.reduce((w, x) => w.map((n, i) => n + (x.weekdays?.[i] || 0)), Array(7).fill(0)),
     shares: { bash: share(["Bash", "Shell"]), read: share(["Read", "Grep", "Glob", "LS"]), edit: share(["Edit", "Write", "MultiEdit", "NotebookEdit", "apply_patch"]), agents: share(["Task", "Agent"]), web: share(["WebFetch", "WebSearch", "Web search"]) },
     agents,
     agentsLabel: agentsLabel(agents),

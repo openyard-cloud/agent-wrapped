@@ -53,6 +53,7 @@ export function emptyAcc() {
     projects: new Set(),
     seen: new Set(),      // assistant message ids already counted (streamed replies repeat them)
     subagentMessages: 0,
+    interrupts: 0,        // times the user stopped the agent mid-reply (Esc)
     cacheReadTokens: 0,
     firstTs: Infinity, lastTs: -Infinity,
   };
@@ -78,7 +79,18 @@ export function touch(acc, s, ts) {
   if (ts > acc.lastTs) acc.lastTs = ts;
 }
 
+// Claude Code writes this as a user line when you press Esc while the agent is working.
+const INTERRUPT = /^\[Request interrupted by user/;
+function textOf(c) {
+  if (typeof c === "string") return c;
+  return Array.isArray(c) ? (c.find(x => x?.type === "text")?.text || "") : "";
+}
+export function isInterrupt(o) {
+  return o.type === "user" && !o.isSidechain && INTERRUPT.test(textOf(o.message?.content).trim());
+}
+
 function isPrompt(o) {
+  if (isInterrupt(o)) return false;
   if (o.isSidechain || o.isMeta || o.promptSource === "system") return false;
   const c = o.message?.content;
   if (typeof c === "string") return !c.startsWith("<command-") && !c.startsWith("<local-command") && c.trim().length > 0;
@@ -130,6 +142,7 @@ export function addLine(acc, o, { sub = false, year } = {}) {
     }
     if (sub) { acc.subagentMessages++; return; }
   } else {
+    if (!sub && isInterrupt(o)) { acc.interrupts++; return; }
     if (sub || !isPrompt(o)) return;
     d.prompts++; d.messages++;
     const dt = new Date(ts);
