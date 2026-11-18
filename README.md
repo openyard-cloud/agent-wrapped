@@ -62,6 +62,24 @@ Where both cover a day, the larger count wins, so nothing is counted twice. The 
 
 **Months missing?** Run `/stats` in Claude Code once (it refreshes the cache) and run agent-wrapped again. To keep transcripts for next year's Wrapped, set `"cleanupPeriodDays": 365` in `~/.claude/settings.json`.
 
+### More than one computer
+
+History is kept per computer, not per account: a new login on the same computer keeps adding to the same `~/.claude`, but sessions on another computer (say, an old laptop still signed in to a personal account) live only there. Bring them over in two steps.
+
+On the other computer, run `/stats` once in Claude Code (so its cache is current), then:
+
+```
+npx github:openyard-cloud/agent-wrapped --export wrapped-laptop.json
+```
+
+Copy `wrapped-laptop.json` to your main computer and run:
+
+```
+npx github:openyard-cloud/agent-wrapped --add wrapped-laptop.json
+```
+
+The file holds counts only (per day, model, tool and hour), no prompts, no file names and no project names; project folders are kept as short one-way hashes so the same project on two computers counts once. `--add` can be given more than once.
+
 ### Codex
 
 Codex keeps every session in `~/.codex/sessions/YYYY/MM/DD/` and moves archived ones to `~/.codex/archived_sessions`; agent-wrapped reads both. Older sessions may be compressed (`.jsonl.zst`): Node 22.15 or newer reads them, and on older Node the page says how many were skipped. Codex days are added on top of Claude Code's, and a forked session's copied history counts once. Set `CODEX_HOME` if yours lives elsewhere.
@@ -81,6 +99,8 @@ Add them after the command, for example `npx github:openyard-cloud/agent-wrapped
 --out card.html   where to write the page
 --no-open         write the page, don't open it
 --json            the numbers as JSON
+--export f.json   save this computer's totals, to add on another computer
+--add f.json      add totals saved with --export (repeatable)
 --demo            made-up data, to see what it looks like
 ```
 
