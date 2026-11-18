@@ -165,6 +165,15 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
   var CELL_OPACITY = [0.1, 0.35, 0.55, 0.78, 1];
 
   var tokensWar = D.tokens / 780000;
+  // Some days are known only from prompt history, which keeps no tokens: then the total is a floor, shown with "+".
+  var missingTokenDays = D.tokenDays > 0 && D.tokenDays < D.activeDays ? D.activeDays - D.tokenDays : 0;
+  var TOK_PLUS = missingTokenDays ? "+" : "";
+  // A floor is rounded down to the digits shown, so "72.5M" reads "72M+", never "73M+".
+  function fmtTok(n) {
+    if (!TOK_PLUS) return fmt(n);
+    var step = n >= 1e10 ? 1e9 : n >= 1e9 ? 1e8 : n >= 1e7 ? 1e6 : n >= 1e6 ? 1e5 : n >= 1e4 ? 1e3 : 1;
+    return fmt(Math.floor(n / step) * step) + "+";
+  }
   var fav = D.favourite, L = D.longest;
   var reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -244,10 +253,11 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       for (var i = 0; i < n; i++) books.appendChild(A(el("i", { style: "height:" + (18 + (i * 7) % 11) + "px" }), 900 + i * Math.min(14, 1200 / n), "pp"));
       return [
         label("Words, in and out"),
-        counter(A(el("div", { class: "big", text: fmt(D.tokens) }), 100), D.tokens, fmt, 100),
+        counter(A(el("div", { class: "big", text: fmtTok(D.tokens) }), 100), D.tokens, fmtTok, 100),
         A(el("p", { class: "lead", text: "tokens written and read by your agent." }), 500),
         books,
-        A(el("p", { class: "small", text: tokensWar >= 1.5 ? "About " + Math.round(tokensWar) + " copies of War and Peace" + (per > 1 ? ", one spine for every " + per + "." : ", one spine each.") : "About " + Math.max(1, Math.round(tokensWar * 100)) + "% of War and Peace." }), 800),
+        A(el("p", { class: "small", text: tokensWar >= 1.5 ? (missingTokenDays ? "At least " : "About ") + Math.round(tokensWar) + " copies of War and Peace" + (per > 1 ? ", one spine for every " + per + "." : ", one spine each.") : "About " + Math.max(1, Math.round(tokensWar * 100)) + "% of War and Peace." }), 800),
+        missingTokenDays ? A(el("p", { class: "small", text: "Counted on " + D.tokenDays + " of your " + D.activeDays + " days. The other " + missingTokenDays + " only kept your prompts, not tokens, so the real total is higher." }), 1200) : null,
         D.contextTokens ? A(el("p", { class: "small", text: "On top of that, it re-read " + fmt(D.contextTokens) + " tokens of context from cache to keep track of your work." }), 1600) : null,
         el("p", { class: "note", text: "Input plus output tokens, the same count /stats uses. Cache reads are listed separately." }) ]; } },
 
@@ -310,7 +320,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       var save = el("button", { text: "Save image" }), copy = el("button", { class: "ghost", text: "Copy text" });
       save.addEventListener("click", function () { canvas.toBlob(function (b) { var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "agent-wrapped-" + D.year + ".png"; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }, "image/png"); });
       copy.addEventListener("click", function () {
-        var t = "My " + D.year + " with " + WHO + ": " + D.persona.title + ". " + D.activeDays + " active days, " + plain(D.sessions) + " sessions, " + fmt(D.tokens) + " tokens" + (fav ? ", mostly " + fav.name : "") + ". Make yours: wrapped.openyard.cloud";
+        var t = "My " + D.year + " with " + WHO + ": " + D.persona.title + ". " + D.activeDays + " active days, " + plain(D.sessions) + " sessions, " + fmtTok(D.tokens) + " tokens" + (fav ? ", mostly " + fav.name : "") + ". Make yours: wrapped.openyard.cloud";
         (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { copy.textContent = "Copied"; }, function () { window.prompt("Copy this:", t); });
       });
       document.fonts.load('800 40px "Bricolage"').then(function () { drawCard(canvas); }, function () { drawCard(canvas); });
@@ -366,7 +376,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       x.fillText(m, L + c * (cw + gap), hb + 20);
     });
     // Bottom: four numbers.
-    var stats = [[plain(D.activeDays), "active days"], [fmt(D.tokens), "tokens"], [D.streak.days + " days", "longest streak"], [fav ? fav.name : "–", "favourite model"]];
+    var stats = [[plain(D.activeDays), "active days"], [fmtTok(D.tokens), "tokens"], [D.streak.days + " days", "longest streak"], [fav ? fav.name : "–", "favourite model"]];
     var sw = (R - L) / stats.length;
     stats.forEach(function (s, i) {
       x.fillStyle = C.paper; x.font = "800 58px " + F; fitText(x, s[0], L + i * sw, 498, sw - 28, 58, F);

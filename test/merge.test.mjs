@@ -104,6 +104,7 @@ test("prompt history fills the days the cache and transcripts lost, and nothing 
   const s = JSON.parse(r.stdout);
   assert.equal(s.activeDays, 2);
   assert.equal(s.historyDays, 1);
+  assert.equal(s.tokenDays, 1);               // the history day has no tokens, so the total is a floor
   assert.equal(s.heatmap["2026-09-03"], 3);   // three prompts
   assert.equal(s.heatmap["2026-10-20"], 2);   // the transcript's count, not the history's
   assert.equal(s.sessions, 1 + 2);             // a 30-minute gap starts a new session
@@ -112,5 +113,6 @@ test("prompt history fills the days the cache and transcripts lost, and nothing 
   assert.equal(run(["--year", "2026", "--out", out, "--no-open"], { CLAUDE_CONFIG_DIR: dir }).status, 0);
   const html = fs.readFileSync(out, "utf8");
   for (const leak of ["stripe", "secret-startup", "after lunch"]) assert.ok(!html.includes(leak), `page leaks "${leak}"`);
+  assert.match(html, /"tokenDays":1/);
   fs.rmSync(dir, { recursive: true });
 });

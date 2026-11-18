@@ -239,6 +239,9 @@ export function finish(t, { now = Date.now() } = {}) {
     messages: total("messages"),
     toolCalls: total("toolCalls"),
     tokens: total("tokens") || models.reduce((a, m) => a + m.tokens, 0),
+    // Days with any token count. Fewer than activeDays means some days are known only from prompt history,
+    // so the token total is a floor, and the page says so.
+    tokenDays: days.filter(([, d]) => d.tokens > 0).length || (total("tokens") ? 0 : activeDates.length),
     contextTokens: t.contextTokens || 0,
     streak: longestStreak(activeDates),
     busiest: busiest ? { date: busiest[0], messages: busiest[1].messages } : null,
