@@ -42,6 +42,10 @@ html, body { height: 100%; margin: 0; background: var(--ink); color: var(--paper
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .slide.on { animation: none; } }
 .still .slide.on { animation: none; }
+/* Embedded in another page (the website's phone frame): fill the frame, no chrome of our own. */
+.embedded .stage { padding: 0; }
+.embedded .story { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+.embedded .hint { display: none; }
 .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
 h1, h2 { margin: 0; font-weight: 800; letter-spacing: -.03em; line-height: .95; }
 h1 { font-size: clamp(54px, 15vw, 84px); }
@@ -84,6 +88,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 (function () {
   "use strict";
   var D = JSON.parse(document.getElementById("data").textContent);
+  try { if (window.self !== window.top) document.documentElement.classList.add("embedded"); } catch (e) { document.documentElement.classList.add("embedded"); }
   var story = document.getElementById("story"), bars = document.getElementById("bars");
 
   function fmt(n) {
