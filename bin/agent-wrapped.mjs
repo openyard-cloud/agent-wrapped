@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { claudeDir, readStatsCache, readTranscripts, emptyAcc } from "../src/claude.mjs";
+import { claudeDir, readStatsCache, readTranscripts, readHistory, emptyAcc } from "../src/claude.mjs";
 import { codexDir, readCodex } from "../src/codex.mjs";
 import { tally, finish, mergeTallies, readTally } from "../src/stats.mjs";
 import { renderHtml } from "../src/html.mjs";
@@ -92,7 +92,7 @@ async function main() {
     const acc = useClaude ? await readTranscripts(cdir, { year, onProgress: show("Claude Code") }) : emptyAcc();
     const extra = useCodex ? [{ agent: "Codex", acc: await readCodex(xdir, { year, onProgress: show("Codex") }) }] : [];
     if (progress) process.stderr.write("\r\x1b[2K");
-    const here = tally({ acc, cache: useClaude ? readStatsCache(cdir) : null, year, extra });
+    const here = tally({ acc, cache: useClaude ? readStatsCache(cdir) : null, year, extra, history: useClaude ? readHistory(cdir, { year }) : null });
     if (o.export) {
       fs.writeFileSync(o.export, JSON.stringify(here));
       const n = Object.values(here.days).filter(d => d.messages + d.tokens + d.toolCalls > 0).length;

@@ -73,7 +73,7 @@ function coverage(dates) {
  * extra: other agents' accumulators, e.g. [{ agent: "Codex", acc }]. They share no days with Claude Code's
  * cache, so they are added on top after that merge.
  */
-export function tally({ acc, cache, year, extra = [] }) {
+export function tally({ acc, cache, year, extra = [], history = null }) {
   const y = String(year);
   const days = new Map(); // date -> { messages, sessions, toolCalls, tokens, source }
   const cacheUntil = cache?.lastComputedDate || null;
@@ -100,6 +100,14 @@ export function tally({ acc, cache, year, extra = [] }) {
     const t = { messages: d.messages, sessions: d.sessions.size, toolCalls: d.toolCalls, tokens: d.tokens };
     if (!cur) days.set(date, t);
     else days.set(date, { messages: Math.max(cur.messages, t.messages), sessions: Math.max(cur.sessions, t.sessions), toolCalls: Math.max(cur.toolCalls, t.toolCalls), tokens: Math.max(cur.tokens, t.tokens) });
+  }
+  // 2b. Prompt history, only for days neither the cache nor the transcripts know (it has no tokens or tools).
+  const historyDates = [];
+  for (const [date, h] of history?.days || []) {
+    const cur = days.get(date);
+    if (cur && cur.messages + cur.tokens + cur.toolCalls > 0) continue;
+    days.set(date, { messages: h.prompts, sessions: h.sessions, toolCalls: 0, tokens: 0 });
+    historyDates.push(date);
   }
   // 3. Other agents, added on top.
   for (const { acc: x } of extra) {
@@ -128,13 +136,15 @@ export function tally({ acc, cache, year, extra = [] }) {
   for (const [h, n] of Object.entries(cache?.hourCounts || {})) if (cache?.firstSessionDate?.startsWith(y) || !cache?.firstSessionDate) hours[+h] += n;
   for (const s of acc.sessions.values()) if (s.startHour >= 0 && (!cacheUntil || localDate(s.first) > cacheUntil)) hours[s.startHour]++;
   for (const { acc: x } of extra) for (const s of x.sessions.values()) if (s.startHour >= 0) hours[s.startHour]++;
+  for (const date of historyDates) for (const h of history.days.get(date).startHours) hours[h]++;
 
   // Sessions from transcripts: active time, cost, lines, projects.
   const sessions = all.flatMap(a => [...a.sessions.values()]);
   const longest = sessions.reduce((best, s) => (s.activeMs > (best?.activeMs || 0) ? s : best), null);
   const cacheLongest = cache?.longestSession?.timestamp?.startsWith(y) ? cache.longestSession : null;
-  const projects = [...new Set(sessions.map(s => s.cwd).filter(c => c && !TEMP.test(c)).map(c => createHash("sha256").update(c).digest("hex").slice(0, 12)))];
-  const hasClaude = acc.days.size > 0 || (cache?.dailyActivity || []).some(d => d.date?.startsWith(y));
+  const projects = [...new Set([...sessions.map(s => s.cwd), ...(history?.projects || [])].filter(c => c && !TEMP.test(c)).map(c => createHash("sha256").update(c).digest("hex").slice(0, 12)))];
+  const hasClaude = acc.days.size > 0 || historyDates.length > 0 || (cache?.dailyActivity || []).some(d => d.date?.startsWith(y));
+  const fromHistory = (k, start) => historyDates.reduce((a, date) => k(a, history.days.get(date)), start);
 
   return {
     format: TALLY_FORMAT, year,
@@ -144,7 +154,8 @@ export function tally({ acc, cache, year, extra = [] }) {
     cacheUntil,
     models: Object.fromEntries([...modelFirst].map(([id, first]) => [id, { first, tokens: modelTokens.get(id) || 0 }])),
     hours,
-    weekdays: all.reduce((w, x) => w.map((n, i) => n + (x.weekdays?.[i] || 0)), Array(7).fill(0)),
+    weekdays: fromHistory((w, h) => w.map((n, i) => n + h.weekdays[i]), all.reduce((w, x) => w.map((n, i) => n + (x.weekdays?.[i] || 0)), Array(7).fill(0))),
+    historyDays: historyDates.length,
     tools: mergeMaps("tools"), exts: mergeMaps("exts"),
     longest: longest ? { activeMs: longest.activeMs, messages: longest.messages, first: longest.first } : null,
     cacheLongest: cacheLongest ? { messageCount: cacheLongest.messageCount, timestamp: cacheLongest.timestamp } : null,
@@ -154,7 +165,7 @@ export function tally({ acc, cache, year, extra = [] }) {
     linesRemoved: sessions.reduce((a, s) => a + s.linesRemoved, 0),
     contextTokens: (cache?.firstSessionDate?.startsWith(y) ? Object.values(cache?.modelUsage || {}).reduce((a, u) => a + (u.cacheReadInputTokens || 0), 0) : 0) + all.reduce((a, x) => a + x.cacheReadTokens, 0),
     subagentMessages: all.reduce((a, x) => a + x.subagentMessages, 0),
-    prompts: all.reduce((a, x) => a + [...x.days.values()].reduce((b, d) => b + (d.prompts || 0), 0), 0), // transcripts only
+    prompts: fromHistory((a, h) => a + h.prompts, all.reduce((a, x) => a + [...x.days.values()].reduce((b, d) => b + (d.prompts || 0), 0), 0)), // transcripts, then history
     interrupts: all.reduce((a, x) => a + (x.interrupts || 0), 0),
     skippedCompressed: extra.reduce((a, e) => a + (e.acc.skippedCompressed || 0), 0),
   };
@@ -187,7 +198,7 @@ export function mergeTallies(list) {
     if (t.longest && (!out.longest || t.longest.activeMs > out.longest.activeMs)) out.longest = t.longest;
     if (t.cacheLongest && (!out.cacheLongest || t.cacheLongest.messageCount > out.cacheLongest.messageCount)) out.cacheLongest = t.cacheLongest;
     out.projects = [...new Set([...out.projects, ...t.projects])];
-    for (const k of ["cost", "linesAdded", "linesRemoved", "contextTokens", "subagentMessages", "prompts", "interrupts", "skippedCompressed"]) out[k] = (out[k] || 0) + (t[k] || 0);
+    for (const k of ["cost", "linesAdded", "linesRemoved", "contextTokens", "subagentMessages", "prompts", "interrupts", "skippedCompressed", "historyDays"]) out[k] = (out[k] || 0) + (t[k] || 0);
   }
   return out;
 }
@@ -245,6 +256,7 @@ export function finish(t, { now = Date.now() } = {}) {
     subagentMessages: t.subagentMessages || 0,
     prompts: t.prompts || 0,
     interrupts: t.interrupts || 0,
+    historyDays: t.historyDays || 0,
     weekdays: t.weekdays,
     shares: { bash: share(["Bash", "Shell"]), read: share(["Read", "Grep", "Glob", "LS"]), edit: share(["Edit", "Write", "MultiEdit", "NotebookEdit", "apply_patch"]), agents: share(["Task", "Agent"]), web: share(["WebFetch", "WebSearch", "Web search"]) },
     agents: t.agents,
@@ -256,8 +268,8 @@ export function finish(t, { now = Date.now() } = {}) {
 }
 
 /** One computer, start to finish. */
-export function summarize({ acc, cache, year, now = Date.now(), extra = [] }) {
-  return finish(tally({ acc, cache, year, extra }), { now });
+export function summarize({ acc, cache, year, now = Date.now(), extra = [], history = null }) {
+  return finish(tally({ acc, cache, year, extra, history }), { now });
 }
 
 /** A playful label, picked by the first rule that fits. Each one is explained on the card. */

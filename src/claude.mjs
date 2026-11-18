@@ -13,6 +13,40 @@ export function readStatsCache(dir) {
   try { return JSON.parse(fs.readFileSync(path.join(dir, "stats-cache.json"), "utf8")); } catch { return null; }
 }
 
+/**
+ * Claude Code's prompt history (history.jsonl, what the up arrow recalls). It is not cleaned up after 30 days,
+ * so it still knows which days you worked after the transcripts are gone and /stats was last run. Only the time
+ * and the project folder of each prompt are read; the prompt text is skipped. Sessions are estimated: a new one
+ * starts when a project has been quiet for 30 minutes.
+ * Returns date -> { prompts, sessions, startHours: [hour...], weekdays: [7] } and the project folders.
+ */
+export function readHistory(dir, { year } = {}) {
+  const days = new Map(), projects = new Set(), lastByProject = new Map();
+  let text;
+  try { text = fs.readFileSync(path.join(dir, "history.jsonl"), "utf8"); } catch { return { days, projects }; }
+  const rows = [];
+  for (const line of text.split("\n")) {
+    if (!line) continue;
+    let o;
+    try { o = JSON.parse(line); } catch { continue; }
+    const ts = typeof o.timestamp === "number" ? o.timestamp : Date.parse(o.timestamp);
+    if (!Number.isFinite(ts) || (year && new Date(ts).getFullYear() !== year)) continue;
+    rows.push([ts, typeof o.project === "string" ? o.project : ""]);
+  }
+  rows.sort((a, b) => a[0] - b[0]);
+  for (const [ts, project] of rows) {
+    const date = localDate(ts), dt = new Date(ts);
+    let d = days.get(date);
+    if (!d) days.set(date, d = { prompts: 0, sessions: 0, startHours: [], weekdays: Array(7).fill(0) });
+    d.prompts++; d.weekdays[dt.getDay()]++;
+    const last = lastByProject.get(project);
+    if (last === undefined || ts - last >= IDLE_GAP || localDate(last) !== date) { d.sessions++; d.startHours.push(dt.getHours()); }
+    lastByProject.set(project, ts);
+    if (project) projects.add(project);
+  }
+  return { days, projects };
+}
+
 /** Every transcript file: main sessions at projects/<p>/<id>.jsonl, subagents at projects/<p>/<id>/subagents/*.jsonl. */
 export function listTranscripts(dir) {
   const root = path.join(dir, "projects"), out = [];
