@@ -136,3 +136,15 @@ test("demo data renders and is marked as demo", () => {
   const html = renderHtml(demoSummary(2026), { demo: true, font: "" });
   assert.match(html, /"demo":true/);
 });
+
+test("Esc interrupts are counted apart and are not prompts", async () => {
+  const { emptyAcc, addLine } = await import("../src/claude.mjs");
+  const acc = emptyAcc();
+  const at = "2026-03-03T10:00:00.000Z";
+  addLine(acc, { type: "user", timestamp: at, sessionId: "s", message: { content: "fix the build" } }, { year: 2026 });
+  addLine(acc, { type: "user", timestamp: at, sessionId: "s", message: { content: [{ type: "text", text: "[Request interrupted by user]" }] } }, { year: 2026 });
+  addLine(acc, { type: "user", timestamp: at, sessionId: "s", message: { content: "[Request interrupted by user for tool use]" } }, { year: 2026 });
+  addLine(acc, { type: "user", timestamp: at, sessionId: "s", isSidechain: true, message: { content: "[Request interrupted by user]" } }, { year: 2026 });
+  assert.equal(acc.interrupts, 2);
+  assert.equal([...acc.days.values()][0].prompts, 1);
+});

@@ -32,7 +32,7 @@ export function renderHtml(summary, { demo = false, font = fontBase64() } = {}) 
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; background: var(--ink); color: var(--paper); font-family: var(--display); }
 .stage { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; }
-.story { position: relative; width: min(100%, 520px); height: min(100%, 900px); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+.story { container-type: inline-size; position: relative; width: min(100%, 520px); height: min(100%, 900px); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
 .bars { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 5px; z-index: 5; }
 .bars i { flex: 1; height: 3px; border-radius: 2px; background: currentColor; opacity: .25; }
 .bars i.on { opacity: .9; }
@@ -41,48 +41,81 @@ html, body { height: 100%; margin: 0; background: var(--ink); color: var(--paper
 .auto .bars i.now { transform-origin: left center; animation: bar-fill var(--slide-ms, 3400ms) linear both; }
 .auto.paused .bars i.now { animation-play-state: paused; }
 @keyframes bar-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-.slide { position: absolute; inset: 0; padding: 56px 30px 96px; display: none; flex-direction: column; justify-content: center; gap: 18px; background: var(--bg); color: var(--fg); }
-.slide > .kicker { position: absolute; top: 46px; left: 30px; right: 30px; }
-.slide.on { display: flex; animation: rise .45s cubic-bezier(.2,.8,.2,1); }
-@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .slide.on { animation: none; } }
-.still .slide.on { animation: none; }
+.slide { position: absolute; inset: 0; padding: 64px 28px 92px; display: none; flex-direction: column; justify-content: center; gap: 16px; background: var(--bg); color: var(--fg); overflow: hidden; }
+.slide > .label { position: absolute; top: 40px; left: 28px; right: 28px; }
+.slide.on { display: flex; }
 /* Embedded in another page (the website's phone frame): fill the frame, no chrome of our own. */
 .embedded .stage { padding: 0; }
 .embedded .story { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
 .embedded .hint { display: none; }
-.kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
+.label { font-size: 15px; font-weight: 600; opacity: .8; }
 h1, h2 { margin: 0; font-weight: 800; letter-spacing: -.03em; line-height: .95; }
 h1 { font-size: clamp(54px, 15vw, 84px); }
-h2 { font-size: clamp(34px, 9vw, 46px); }
-.big { font-size: clamp(64px, 19vw, 112px); font-weight: 800; letter-spacing: -.045em; line-height: .9; font-variant-numeric: tabular-nums; }
-.lead { font-size: 19px; line-height: 1.35; font-weight: 500; max-width: 30ch; }
-.note { position: absolute; left: 30px; right: 30px; bottom: 26px; font-family: var(--mono); font-size: 11.5px; line-height: 1.5; opacity: .7; }
-.rows { display: grid; gap: 10px; }
-.row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; font-size: 18px; font-weight: 600; border-bottom: 2px solid color-mix(in srgb, currentColor 18%, transparent); padding-bottom: 8px; }
+h2 { font-size: clamp(34px, 9.5vw, 48px); }
+.big { font-size: clamp(76px, 24vw, 132px); font-weight: 800; letter-spacing: -.05em; line-height: .85; font-variant-numeric: tabular-nums; }
+.lead { margin: 0; font-size: 20px; line-height: 1.3; font-weight: 600; max-width: 28ch; }
+.small { margin: 0; font-size: 16px; line-height: 1.35; font-weight: 500; max-width: 32ch; opacity: .85; }
+.note { position: absolute; left: 28px; right: 28px; bottom: 26px; margin: 0; font-size: 12.5px; line-height: 1.45; font-weight: 500; opacity: .7; }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 18px; padding-top: 18px; border-top: 2px solid color-mix(in srgb, currentColor 22%, transparent); }
+.trio b { display: block; font-size: 30px; font-weight: 800; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.trio span { display: block; margin-top: 6px; font-size: 14px; font-weight: 600; opacity: .75; }
+.rows { display: grid; gap: 12px; }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; font-size: 18px; font-weight: 600; }
 .row b { font-variant-numeric: tabular-nums; font-weight: 800; }
-.bar { height: 10px; border-radius: 5px; background: currentColor; opacity: .85; margin-top: 4px; }
-.chips { display: grid; gap: 8px; }
-.chip { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
-.chip span:first-child { font-family: var(--mono); font-size: 12px; font-weight: 500; opacity: .75; }
-.chip .fav { font-family: var(--mono); font-size: 11px; font-weight: 600; border: 1.5px solid currentColor; border-radius: 99px; padding: 1px 8px; }
-.heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 2px; width: 100%; aspect-ratio: 53 / 7.4; }
-.heat i { border-radius: 2px; background: currentColor; }
-.clock { display: grid; grid-template-columns: repeat(24, 1fr); align-items: end; gap: 3px; height: 150px; }
-.clock i { background: currentColor; border-radius: 3px 3px 0 0; opacity: .35; min-height: 2px; }
+.bar { height: 10px; border-radius: 5px; background: currentColor; margin-top: 6px; }
+.models { display: grid; gap: 2px; }
+.model { position: relative; display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; padding: 4px 10px; margin: 0 -10px; border-radius: 8px; font-size: 18px; font-weight: 700; }
+.model span:first-child { font-size: 13px; font-weight: 600; opacity: .65; }
+.model.fav { background: var(--ink); color: var(--lime); }
+.model.fav span:last-child { font-size: 12px; font-weight: 700; }
+.months { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 14px; }
+.month b { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; opacity: .8; color: var(--paper); }
+.month div { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.month i { aspect-ratio: 1; border-radius: 2px; background: currentColor; }
+.clock { display: grid; grid-template-columns: repeat(24, 1fr); align-items: end; gap: 3px; height: 170px; }
+.clock i { background: currentColor; border-radius: 3px 3px 0 0; opacity: .32; min-height: 2px; }
 .clock i.peak { opacity: 1; }
-.clock-axis { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; opacity: .7; }
+.clock-axis { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; opacity: .7; }
+.books { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 3px; max-width: 100%; }
+.books i { width: 7px; border-radius: 2px; background: currentColor; }
+.persona h1 { font-size: clamp(58px, 17vw, 96px); }
 .cardwrap { width: 100%; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
 canvas { display: block; width: 100%; height: auto; }
 .btns { display: flex; flex-wrap: wrap; gap: 10px; }
-button { font: 700 16px var(--display); border: 0; border-radius: 99px; padding: 12px 18px; cursor: pointer; background: var(--fg); color: var(--bg); }
+button { font: 700 16px var(--display); border: 0; border-radius: 99px; padding: 12px 18px; cursor: pointer; background: var(--fg); color: var(--bg); transition: transform 120ms cubic-bezier(.2,0,0,1); }
+button:active { transform: scale(.97); }
 button.ghost { background: transparent; color: var(--fg); box-shadow: inset 0 0 0 2px currentColor; }
 button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 .tap { position: absolute; top: 0; bottom: 0; width: 35%; z-index: 4; }
 .tap.prev { left: 0; } .tap.next { right: 0; }
 .last .tap { display: none; }
 .hint { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-family: var(--mono); font-size: 11px; color: #7d8590; }
-.demo { position: absolute; top: 24px; right: 14px; z-index: 6; font: 700 11px var(--mono); background: var(--tomato); color: var(--ink); padding: 3px 8px; border-radius: 4px; letter-spacing: .08em; }
+.demo { position: absolute; top: 24px; right: 14px; z-index: 6; font: 700 11px var(--display); background: var(--ink); color: var(--tomato); box-shadow: inset 0 0 0 1.5px var(--tomato); padding: 3px 8px; border-radius: 4px; letter-spacing: .04em; }
+
+/*
+  Motion. Each slide plays its own short scene when it comes on: the headline rises out of its line, the
+  number counts up, then the details land in order (bars grow, cells pop, the list deals in). --d is the
+  delay in ms for each piece. Only transform and opacity move. Reduced motion shows every slide finished.
+*/
+.story { --e: cubic-bezier(.22, 1, .36, 1); --pop: cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes up { from { opacity: 0; transform: translateY(18px); } }
+@keyframes word { from { transform: translateY(130%); } to { transform: none; } }
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: none; } }
+@keyframes grow-y { from { transform: scaleY(0); } to { transform: none; } }
+@keyframes pop { from { opacity: 0; transform: scale(.2); } }
+@keyframes land { from { opacity: 0; transform: scale(1.35); } }
+@keyframes fade { from { opacity: 0; } }
+.w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .14em; margin-bottom: -.14em; }
+.w > span { display: inline-block; }
+.slide.on .in { animation: up 640ms var(--e) calc(var(--d, 0) * 1ms) both; }
+.slide.on .w > span { animation: word 760ms var(--e) calc(var(--d, 0) * 1ms) both; }
+.slide.on .gx { transform-origin: left center; animation: grow-x 900ms var(--e) calc(var(--d, 0) * 1ms) both; }
+.slide.on .gy { transform-origin: center bottom; animation: grow-y 700ms var(--e) calc(var(--d, 0) * 1ms) both; }
+.slide.on .pp { animation: pop 420ms var(--pop) calc(var(--d, 0) * 1ms) both; }
+.slide.on .ld { animation: land 900ms var(--e) calc(var(--d, 0) * 1ms) both; }
+.slide.on .fd { animation: fade 500ms var(--e) calc(var(--d, 0) * 1ms) both; }
+.slide.on .note { animation: fade 600ms var(--e) 1200ms both; }
+@media (prefers-reduced-motion: reduce) { .slide.on * { animation: none !important; } }
 </style>
 </head>
 <body>
@@ -129,79 +162,148 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
     return cells;
   }
   var CELL_OPACITY = [0.1, 0.35, 0.55, 0.78, 1];
-  function heatEl() {
-    var h = el("div", { class: "heat", "aria-label": "Activity by day across " + D.year });
-    heatCells(D.year).forEach(function (lv) { h.appendChild(el("i", { style: lv < 0 ? "opacity:0" : "opacity:" + CELL_OPACITY[lv] })); });
-    return h;
-  }
 
   var tokensWar = D.tokens / 780000;
-  var fav = D.favourite;
+  var fav = D.favourite, L = D.longest;
+  var reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  // A: give a piece of a slide its entrance and the moment it starts (ms after the slide comes on).
+  function A(n, d, cls) { n.classList.add(cls || "in"); n.style.setProperty("--d", d); return n; }
+  // A headline that rises out of its own line, word by word.
+  function words(tag, text, d0, step) {
+    var h = el(tag);
+    String(text).split(" ").forEach(function (w, i) {
+      if (i) h.appendChild(document.createTextNode(" "));
+      var s = el("span", { text: w }); s.style.setProperty("--d", d0 + i * (step || 70));
+      h.appendChild(el("span", { class: "w" }, [s]));
+    });
+    return h;
+  }
+  // A number that counts up from zero when its slide comes on.
+  function counter(n, to, f, d) { n._to = to; n._f = f; n._d = d || 0; n.classList.add("count"); return n; }
+  function label(t) { return el("div", { class: "label", text: t }); }
+  function lv(v, max) { return v === 0 ? 0 : Math.min(4, 1 + Math.floor(Math.sqrt(v / max) * 3.999)); }
+  function monthsEl() {
+    var wrap = el("div", { class: "months", "aria-label": "Activity by day across " + D.year }), max = 1;
+    for (var k in D.heatmap) max = Math.max(max, D.heatmap[k]);
+    for (var m = 0; m < 12; m++) {
+      var grid = el("div"), first = new Date(D.year, m, 1);
+      for (var i = 0; i < first.getDay(); i++) grid.appendChild(el("i", { style: "visibility:hidden" }));
+      for (var d = new Date(first); d.getMonth() === m; d.setDate(d.getDate() + 1)) {
+        var key = D.year + "-" + String(m + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+        grid.appendChild(A(el("i", { style: "opacity:" + CELL_OPACITY[lv(D.heatmap[key] || 0, max)] }), 300 + m * 70 + d.getDate() * 6, "pp"));
+      }
+      wrap.appendChild(el("div", { class: "month" }, [A(el("b", { text: MONTHS[m] }), 250 + m * 70, "fd"), grid]));
+    }
+    return wrap;
+  }
+  var hoursLabel = function (h) { return h >= 1 ? Math.round(h) + "h" : Math.round(h * 60) + "m"; };
+  var daysLabel = function (n) { n = Math.round(n); return n + (n === 1 ? " day" : " days"); };
+  var maxDay = D.weekdays ? Math.max.apply(null, D.weekdays) : 0;
+  var peakDay = maxDay > 0 ? D.weekdays.indexOf(maxDay) : -1;
+
   var slides = [
     { bg: "var(--ink)", fg: "var(--lime)", build: function () { return [
-      el("div", { class: "kicker", text: "agent-wrapped · " + D.year }),
-      el("h1", { text: "Your " + D.year + " with " + WHO }),
-      el("p", { class: "lead", text: "A year of prompts, tool calls and late nights, counted on your own machine." }),
+      label("agent-wrapped"),
+      words("h1", "Your " + D.year + " with " + WHO, 150, 80),
+      A(el("p", { class: "lead", text: "A year of prompts, tool calls and late nights, counted on your own machine." }), 800),
       el("p", { class: "note", text: coverNote }) ]; } },
-    { bg: "var(--lime)", fg: "var(--ink)", build: function () { return [
-      el("div", { class: "kicker", text: "You showed up" }),
-      el("div", { class: "big", text: plain(D.activeDays) }),
-      el("p", { class: "lead", text: "days with your agent. " + (D.streak.days > 1 ? "Your longest run was " + D.streak.days + " days in a row." : "") }),
-      el("div", { class: "rows" }, [
-        el("div", { class: "row" }, ["Sessions", el("b", { text: plain(D.sessions) })]),
-        el("div", { class: "row" }, ["Messages", el("b", { text: plain(D.messages) })]),
-        el("div", { class: "row" }, ["Tool calls", el("b", { text: plain(D.toolCalls) })]),
-        D.busiest ? el("div", { class: "row" }, ["Busiest day", el("b", { text: dayLabel(D.busiest.date) })]) : null ]) ]; } },
+
+    { bg: "var(--lime)", fg: "var(--ink)", build: function () {
+      var trio = el("div", { class: "trio" });
+      [[D.streak.days, daysLabel, "in a row"], [D.sessions, plain, "sessions"], [D.toolCalls, fmt, "tool calls"]].forEach(function (x, i) {
+        trio.appendChild(A(el("div", {}, [counter(el("b", { text: x[1](x[0]) }), x[0], x[1], 900 + i * 120), el("span", { text: x[2] })]), 900 + i * 120));
+      });
+      return [
+        label("You showed up"),
+        counter(A(el("div", { class: "big", text: plain(D.activeDays) }), 100), D.activeDays, plain, 100),
+        A(el("p", { class: "lead", text: "days with your agent this year." }), 500),
+        trio ]; } },
+
     { bg: "var(--teal)", fg: "var(--lime)", build: function () { return [
-      el("div", { class: "kicker", text: "Your year, day by day" }),
-      el("h2", { text: D.activeDays + " days lit up" }),
-      heatEl(),
-      el("p", { class: "lead", style: "color:var(--paper)", text: D.busiest ? "The brightest square is " + dayLabel(D.busiest.date) + ": " + plain(D.busiest.messages) + " messages." : "" }),
+      label("Your year, day by day"),
+      words("h2", D.busiest ? dayLabel(D.busiest.date) + " was your biggest day" : D.activeDays + " days lit up", 100, 70),
+      D.busiest ? A(el("p", { class: "small", style: "color:var(--paper)", text: plain(D.busiest.messages) + " messages back and forth, the brightest square below." }), 450) : null,
+      monthsEl(),
       HAS_CLAUDE ? el("p", { class: "note", style: "color:var(--paper)", text: "Claude Code deletes transcripts after 30 days unless you change cleanupPeriodDays, so earlier months may look quieter than they were." }) : null ]; } },
-    { bg: "var(--tomato)", fg: "var(--ink)", build: function () { return [
-      el("div", { class: "kicker", text: "Words, in and out" }),
-      el("div", { class: "big", text: fmt(D.tokens) }),
-      el("p", { class: "lead", text: "tokens written and read by your agent. That is roughly " + (tokensWar >= 2 ? Math.round(tokensWar) + " copies" : "one copy") + " of War and Peace." }),
-      D.contextTokens ? el("p", { class: "lead", style: "font-size:16px", text: "On top of that, it re-read " + fmt(D.contextTokens) + " tokens of context from cache to keep track of your work." }) : null,
-      el("p", { class: "note", text: "Input plus output tokens, the same count /stats uses. Cache reads are listed separately." }) ]; } },
-    { bg: "var(--paper)", fg: "var(--ink)", build: function () {
-      var list = el("div", { class: "chips" });
-      D.models.forEach(function (m) { list.appendChild(el("div", { class: "chip" }, [el("span", { text: dayLabel(m.first) }), el("span", { text: m.name }), fav && m.id === fav.id ? el("span", { class: "fav", text: "most used" }) : el("span", { text: "" })])); });
-      return [
-        el("div", { class: "kicker", text: "Your model year" }),
-        el("h2", { text: D.models.length > 1 ? D.models.length + " models came and went" : "One model all year" }),
-        list,
-        fav ? el("p", { class: "lead", text: "Your favourite was " + fav.name + ", with " + fmt(fav.tokens) + " tokens." }) : null ]; } },
-    { bg: "var(--sky)", fg: "var(--ink)", build: function () {
+
+    { when: D.peakHour !== null, bg: "var(--sky)", fg: "var(--ink)", build: function () {
       var c = el("div", { class: "clock" }), max = Math.max.apply(null, D.hours) || 1;
-      D.hours.forEach(function (n, h) { c.appendChild(el("i", { class: h === D.peakHour ? "peak" : "", style: "height:" + Math.max(2, n / max * 100) + "%" })); });
+      D.hours.forEach(function (n, h) { c.appendChild(A(el("i", { class: h === D.peakHour ? "peak" : "", style: "height:" + Math.max(2, n / max * 100) + "%" }), 450 + h * 28, "gy")); });
       return [
-        el("div", { class: "kicker", text: "When you worked" }),
-        el("h2", { text: D.persona.title }),
-        el("p", { class: "lead", text: D.persona.why }),
-        c, el("div", { class: "clock-axis" }, [el("span", { text: "12 am" }), el("span", { text: "6 am" }), el("span", { text: "noon" }), el("span", { text: "6 pm" }), el("span", { text: "11 pm" })]),
-        D.peakHour !== null ? el("p", { class: "note", text: "Most sessions started around " + hourLabel(D.peakHour) + "." }) : null ]; } },
-    { bg: "var(--ink)", fg: "var(--sky)", build: function () {
-      var maxT = (D.tools[0] || { count: 1 }).count, rows = el("div", { class: "rows" });
-      D.tools.forEach(function (t) { rows.appendChild(el("div", {}, [el("div", { class: "row" }, [t.name, el("b", { text: plain(t.count) })]), el("div", { class: "bar", style: "width:" + Math.max(3, t.count / maxT * 100) + "%" })])); });
+        label("When you worked"),
+        words("h2", "Your hour was " + hourLabel(D.peakHour), 100, 70),
+        peakDay >= 0 ? A(el("p", { class: "small", text: WEEKDAYS[peakDay] + "s were your busiest day of the week." }), 450) : null,
+        c, A(el("div", { class: "clock-axis" }, [el("span", { text: "12 am" }), el("span", { text: "6 am" }), el("span", { text: "noon" }), el("span", { text: "6 pm" }), el("span", { text: "11 pm" })]), 450, "fd") ]; } },
+
+    { bg: "var(--tomato)", fg: "var(--ink)", build: function () {
+      var copies = Math.max(1, Math.round(tokensWar)), per = copies > 120 ? Math.ceil(copies / 120) : 1, n = Math.max(1, Math.round(copies / per));
+      var books = el("div", { class: "books", "aria-hidden": "true" });
+      for (var i = 0; i < n; i++) books.appendChild(A(el("i", { style: "height:" + (18 + (i * 7) % 11) + "px" }), 900 + i * Math.min(14, 1200 / n), "pp"));
       return [
-        el("div", { class: "kicker", text: "What your agent reached for" }),
-        el("h2", { text: (D.tools[0] ? D.tools[0].name : "Tools") + " led the way" }),
+        label("Words, in and out"),
+        counter(A(el("div", { class: "big", text: fmt(D.tokens) }), 100), D.tokens, fmt, 100),
+        A(el("p", { class: "lead", text: "tokens written and read by your agent." }), 500),
+        books,
+        A(el("p", { class: "small", text: tokensWar >= 1.5 ? "About " + Math.round(tokensWar) + " copies of War and Peace" + (per > 1 ? ", one spine for every " + per + "." : ", one spine each.") : "About " + Math.max(1, Math.round(tokensWar * 100)) + "% of War and Peace." }), 800),
+        D.contextTokens ? A(el("p", { class: "small", text: "On top of that, it re-read " + fmt(D.contextTokens) + " tokens of context from cache to keep track of your work." }), 1600) : null,
+        el("p", { class: "note", text: "Input plus output tokens, the same count /stats uses. Cache reads are listed separately." }) ]; } },
+
+    { bg: "var(--paper)", fg: "var(--ink)", build: function () {
+      var list = el("div", { class: "models" });
+      D.models.forEach(function (m, i) {
+        var isFav = fav && m.id === fav.id;
+        list.appendChild(A(el("div", { class: "model" + (isFav ? " fav" : "") }, [el("span", { text: dayLabel(m.first) }), el("span", { text: m.name }), el("span", { text: isFav ? "most used" : "" })]), 400 + i * 70));
+      });
+      return [
+        label("Your model year"),
+        words("h2", D.models.length > 1 ? D.models.length + " models came and went" : "One model all year", 100, 70),
+        list,
+        fav ? A(el("p", { class: "small", text: "Your favourite was " + fav.name + ", with " + fmt(fav.tokens) + " tokens." }), 500 + D.models.length * 70) : null ]; } },
+
+    { when: D.tools.length > 0, bg: "var(--ink)", fg: "var(--sky)", build: function () {
+      var maxT = D.tools[0].count, rows = el("div", { class: "rows" });
+      D.tools.forEach(function (t, i) {
+        rows.appendChild(A(el("div", {}, [el("div", { class: "row" }, [t.name, counter(el("b", { text: plain(t.count) }), t.count, plain, 400 + i * 90)]), A(el("div", { class: "bar", style: "width:" + Math.max(3, t.count / maxT * 100) + "%" }), 450 + i * 90, "gx")]), 400 + i * 90));
+      });
+      return [
+        label("What your agent reached for"),
+        words("h2", D.tools[0].name + " led the way", 100, 70),
         rows,
-        D.languages.length ? el("p", { class: "lead", style: "font-size:16px;color:var(--paper)", text: "Files it edited most: " + D.languages.map(function (l) { return l.name; }).join(", ") + "." }) : null,
+        D.languages.length ? A(el("p", { class: "small", style: "color:var(--paper)", text: "Files it edited most: " + D.languages.map(function (l) { return l.name; }).join(", ") + "." }), 500 + D.tools.length * 90) : null,
         el("p", { class: "note", style: "color:var(--paper)", text: "From the transcripts still on disk: " + dayLabel(cov.transcripts && cov.transcripts.from) + " to " + dayLabel(cov.transcripts && cov.transcripts.to) + "." }) ]; } },
-    { bg: "var(--sand)", fg: "var(--ink)", build: function () {
-      var L = D.longest;
+
+    { when: !!L, bg: "var(--sand)", fg: "var(--ink)", build: function () {
+      var rows = el("div", { class: "rows" }), r = 0;
+      [[D.linesAdded, "Lines added", function (n) { return "+" + plain(n); }], [D.linesRemoved, "Lines removed", function (n) { return "−" + plain(n); }],
+       [D.projects, "Projects", plain], [D.cost, "Value at API prices", function (n) { return "$" + plain(n); }]].forEach(function (x) {
+        if (!x[0]) return;
+        rows.appendChild(A(el("div", { class: "row" }, [x[1], counter(el("b", { text: x[2](x[0]) }), x[0], x[2], 900 + r * 90)]), 900 + r++ * 90));
+      });
       return [
-        el("div", { class: "kicker", text: "The big one" }),
-        el("div", { class: "big", text: L ? (L.hours >= 1 ? Math.round(L.hours) + "h" : Math.round(L.hours * 60) + "m") : "–" }),
-        el("p", { class: "lead", text: L ? "of agent activity in your longest session, on " + dayLabel(L.date) + ". Pauses over 30 minutes don't count." : "" }),
-        el("div", { class: "rows" }, [
-          D.linesAdded ? el("div", { class: "row" }, ["Lines added", el("b", { text: "+" + plain(D.linesAdded) })]) : null,
-          D.linesRemoved ? el("div", { class: "row" }, ["Lines removed", el("b", { text: "−" + plain(D.linesRemoved) })]) : null,
-          D.projects ? el("div", { class: "row" }, ["Projects", el("b", { text: plain(D.projects) })]) : null,
-          D.cost ? el("div", { class: "row" }, ["Value at API prices", el("b", { text: "$" + plain(D.cost) })]) : null ]),
+        label("The big one"),
+        counter(A(el("div", { class: "big", text: hoursLabel(L.hours) }), 100), L.hours, hoursLabel, 100),
+        A(el("p", { class: "lead", text: "of agent activity in your longest session, on " + dayLabel(L.date) + ". Pauses over 30 minutes don't count." }), 500),
+        rows,
         el("p", { class: "note", text: "Lines and value come from Claude Code's own session totals, for the transcripts still on disk. Value is what the same usage would cost at API prices, not what you paid." }) ]; } },
+
+    { when: D.interrupts >= 3, bg: "var(--ink)", fg: "var(--tomato)", build: function () {
+      var every = D.prompts > D.interrupts ? Math.round(D.prompts / D.interrupts) : 0;
+      return [
+        label("Hands on the wheel"),
+        counter(A(el("div", { class: "big", text: plain(D.interrupts) }), 100), D.interrupts, plain, 100),
+        A(el("p", { class: "lead", style: "color:var(--paper)", text: "times you pressed Esc to stop your agent mid-reply." }), 500),
+        every > 1 ? A(el("p", { class: "small", style: "color:var(--paper)", text: "About once every " + every + " prompts. It took every one of them well." }), 1100) : null,
+        el("p", { class: "note", style: "color:var(--paper)", text: "Counted from the transcripts still on disk." }) ]; } },
+
+    { bg: "var(--lime)", fg: "var(--ink)", cls: "persona", build: function () { return [
+      label("Your " + D.year + " in one line"),
+      A(el("p", { class: "lead", text: "All of that makes you" }), 150),
+      // Sized so the longest word fits the slide's width (Bricolage 800 is about 0.6em per letter).
+      A(el("h1", { text: D.persona.title, style: "font-size:min(96px, calc((100cqw - 56px) / " + (0.62 * Math.max.apply(null, D.persona.title.split(" ").map(function (w) { return w.length; }))).toFixed(2) + "))" }), 1000, "ld"),
+      A(el("p", { class: "lead", text: D.persona.why }), 1700) ]; } },
+
     { bg: "var(--ink)", fg: "var(--lime)", last: true, build: function () {
       var canvas = el("canvas", { width: 1200, height: 675, "aria-label": "Your shareable card" });
       var save = el("button", { text: "Save image" }), copy = el("button", { class: "ghost", text: "Copy text" });
@@ -212,12 +314,28 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       });
       document.fonts.load('800 40px "Bricolage"').then(function () { drawCard(canvas); }, function () { drawCard(canvas); });
       return [
-        el("div", { class: "kicker", text: "Share your year" }),
-        el("h2", { text: "Your card" }),
-        el("div", { class: "cardwrap" }, [canvas]),
-        el("div", { class: "btns" }, [save, copy]),
+        label("Share your year"),
+        words("h2", "Your card", 100, 70),
+        A(el("div", { class: "cardwrap" }, [canvas]), 350),
+        A(el("div", { class: "btns" }, [save, copy]), 650),
         el("p", { class: "note", style: "color:var(--paper)", text: "The card shows totals only: no prompts, no file names, no project names. " + coverNote }) ]; } },
-  ];
+  ].filter(function (s) { return s.when !== false; });
+
+  var countRun = 0;
+  function runCounters(node) {
+    var run = ++countRun;
+    [].forEach.call(node.querySelectorAll(".count"), function (n) {
+      if (reduce) { n.textContent = n._f(n._to); return; }
+      n.textContent = n._f(0);
+      var t0 = performance.now() + n._d;
+      (function tick(now) {
+        if (run !== countRun) { n.textContent = n._f(n._to); return; }
+        var p = Math.max(0, Math.min(1, (now - t0) / 1100));
+        n.textContent = p >= 1 ? n._f(n._to) : n._f(n._to * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(tick);
+      })(performance.now());
+    });
+  }
 
   function drawCard(cv) {
     var x = cv.getContext("2d"), W = 1200, H = 675, F = '"Bricolage", "Avenir Next", system-ui, sans-serif';
@@ -287,7 +405,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 
   // Build and run the story.
   var nodes = slides.map(function (s) {
-    var n = el("section", { class: "slide", style: "--bg:" + s.bg + ";--fg:" + s.fg });
+    var n = el("section", { class: "slide" + (s.cls ? " " + s.cls : ""), style: "--bg:" + s.bg + ";--fg:" + s.fg });
     s.build().forEach(function (c) { if (c) n.appendChild(c); });
     story.appendChild(n);
     bars.appendChild(el("i"));
@@ -297,8 +415,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
   var prevTap = el("div", { class: "tap prev" }), nextTap = el("div", { class: "tap next" });
   story.appendChild(prevTap); story.appendChild(nextTap);
   var at = 0;
-  story.classList.add("still"); // no entrance animation on first load
-  var SLIDE_MS = 3400, auto = false, timer = null, startedAt = 0, remaining = 0;
+  var SLIDE_MS = 4200, auto = false, timer = null, startedAt = 0, remaining = 0;
   function stopAuto() { auto = false; clearTimeout(timer); story.classList.remove("auto", "paused"); }
   function step(ms) {
     clearTimeout(timer); startedAt = Date.now(); remaining = ms;
@@ -307,12 +424,13 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
   function pause() { if (!auto || story.classList.contains("paused")) return; clearTimeout(timer); remaining -= Date.now() - startedAt; story.classList.add("paused"); }
   function resume() { if (!auto || !story.classList.contains("paused")) return; story.classList.remove("paused"); step(Math.max(300, remaining)); }
   function show(i) {
-    if (shown++) story.classList.remove("still");
+    shown++;
     at = Math.max(0, Math.min(nodes.length - 1, i));
     nodes.forEach(function (n, k) { n.classList.toggle("on", k === at); });
     [].forEach.call(bars.children, function (b, k) { b.classList.toggle("on", k <= at); b.classList.toggle("now", k === at); });
     bars.style.color = getComputedStyle(nodes[at]).color;
     story.classList.toggle("last", at === nodes.length - 1);
+    runCounters(nodes[at]);
     try { location.hash = "s" + (at + 1); } catch (e) {}
   }
   prevTap.addEventListener("click", function () { stopAuto(); show(at - 1); });

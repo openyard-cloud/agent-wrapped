@@ -33,6 +33,7 @@ export function demoSummary(year = new Date().getFullYear()) {
   acc.sessions.set("demo", { first: Date.parse(`${year}-09-14T01:00:00Z`), last: 0, activeMs: 11.5 * 3.6e6, prompts: 210, messages: 6120, cost: 18420, linesAdded: 412880, linesRemoved: 160214, cwd: "/home/demo/app", startHour: 1 });
   for (let i = 0; i < 37; i++) acc.sessions.set("p" + i, { first: Date.parse(`${year}-10-01T10:00:00Z`), last: 0, activeMs: 3.6e6, prompts: 1, messages: 1, cost: 0, linesAdded: 0, linesRemoved: 0, cwd: "/home/demo/p" + i, startHour: -1 });
   acc.subagentMessages = 21000;
+  acc.interrupts = 46;
   // A few months of Codex on the side, so the demo shows both agents.
   const codex = emptyAcc();
   for (let d = new Date(year, 7, 4); d.getMonth() < 11; d.setDate(d.getDate() + 3)) {
