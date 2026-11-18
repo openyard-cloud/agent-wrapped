@@ -5,8 +5,10 @@
 **[wrapped.openyard.cloud](https://wrapped.openyard.cloud)** · [try the demo story](https://wrapped.openyard.cloud/demo)
 
 ```bash
-npx agent-wrapped
+npx github:openyard-cloud/agent-wrapped
 ```
+
+It runs straight from this repository. A short `npx agent-wrapped` will work once the package is on npm; until then, use the command above, which only ever runs this repository.
 
 ![A share card: "The Night Owl", a heatmap of the whole year, 248 active days, 155M tokens, a 14-day streak, favourite model Opus 4.8. Made from demo data.](https://raw.githubusercontent.com/openyard-cloud/agent-wrapped/main/assets/card-demo.png)
 
@@ -67,12 +69,14 @@ Where both cover a day, the larger count wins, so nothing is counted twice. The 
 
 ## Options
 
+Add them after the command, for example `npx github:openyard-cloud/agent-wrapped --demo`.
+
 ```
-npx agent-wrapped --year 2026     a different year
-npx agent-wrapped --out card.html where to write the page
-npx agent-wrapped --no-open       write the page, don't open it
-npx agent-wrapped --json          the numbers as JSON
-npx agent-wrapped --demo          made-up data, to see what it looks like
+--year 2026       a different year
+--out card.html   where to write the page
+--no-open         write the page, don't open it
+--json            the numbers as JSON
+--demo            made-up data, to see what it looks like
 ```
 
 If your Claude Code config lives somewhere else, set `CLAUDE_CONFIG_DIR`.

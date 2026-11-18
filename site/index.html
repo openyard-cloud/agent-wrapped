@@ -9,7 +9,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://wrapped.openyard.cloud/">
 <meta property="og:title" content="agent-wrapped · Your year with Claude Code, wrapped">
-<meta property="og:description" content="npx agent-wrapped turns your local Claude Code history into a story and a card you can share. Nothing is uploaded.">
+<meta property="og:description" content="One command turns your local Claude Code history into a story and a card you can share. Nothing is uploaded.">
 <meta property="og:image" content="https://wrapped.openyard.cloud/card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="675">
@@ -113,7 +113,8 @@ footer a:hover { color: var(--paper); }
 @media (max-width: 520px) {
   .navlinks a.hide-sm { display: none; }
   .grid4 { grid-template-columns: minmax(0, 1fr); }
-  .cmd code { font-size: 15px; }
+  .cmd code { font-size: 15px; white-space: normal; overflow-wrap: anywhere; }
+  .cmd { align-items: center; }
 }
 </style>
 </head>
@@ -133,7 +134,7 @@ footer a:hover { color: var(--paper); }
       <div class="kicker rise">For Claude Code · free and open source</div>
       <h1 class="rise d2">Your year with Claude Code, <em>wrapped.</em></h1>
       <p class="lede rise d3">One command turns the history already on your computer into a short story and a card you can share. Nothing is uploaded.</p>
-      <div class="cmd rise d3"><code id="cmd1">npx agent-wrapped</code><button class="btn" data-copy="npx agent-wrapped" type="button">Copy</button></div>
+      <div class="cmd rise d3"><code id="cmd1">npx github:openyard-cloud/agent-wrapped</code><button class="btn" data-copy="npx github:openyard-cloud/agent-wrapped" type="button">Copy</button></div>
       <div class="actions rise d3">
         <a class="btn ghost" href="/demo">Try the demo story →</a>
         <span class="small">Node 18+, no install, no sign-in</span>
@@ -162,7 +163,7 @@ footer a:hover { color: var(--paper); }
     <div class="kicker">How it works</div>
     <h2>Three steps, all on your machine</h2>
     <div class="steps">
-      <div class="step"><h3>Run it</h3><p><code>npx agent-wrapped</code> in any terminal. No account, no API key.</p></div>
+      <div class="step"><h3>Run it</h3><p>Paste the command into any terminal. It runs straight from the GitHub repository: no account, no API key.</p></div>
       <div class="step"><h3>It reads your history</h3><p>Claude Code's <code>/stats</code> cache and the session transcripts in <code>~/.claude</code>, merged so no day is counted twice.</p></div>
       <div class="step"><h3>Tap through, save your card</h3><p>One HTML file opens in your browser. The last slide saves your card as a PNG.</p></div>
     </div>
@@ -197,7 +198,7 @@ footer a:hover { color: var(--paper); }
 
   <div class="cta">
     <h2>See your year</h2>
-    <div class="cmd"><code>npx agent-wrapped</code><button class="btn" data-copy="npx agent-wrapped" type="button">Copy</button></div>
+    <div class="cmd"><code>npx github:openyard-cloud/agent-wrapped</code><button class="btn" data-copy="npx github:openyard-cloud/agent-wrapped" type="button">Copy</button></div>
   </div>
 
   <footer>

@@ -195,7 +195,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       var save = el("button", { text: "Save image" }), copy = el("button", { class: "ghost", text: "Copy text" });
       save.addEventListener("click", function () { canvas.toBlob(function (b) { var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "agent-wrapped-" + D.year + ".png"; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }, "image/png"); });
       copy.addEventListener("click", function () {
-        var t = "My " + D.year + " with Claude Code: " + D.persona.title + ". " + D.activeDays + " active days, " + plain(D.sessions) + " sessions, " + fmt(D.tokens) + " tokens" + (fav ? ", mostly " + fav.name : "") + ". Made with npx agent-wrapped";
+        var t = "My " + D.year + " with Claude Code: " + D.persona.title + ". " + D.activeDays + " active days, " + plain(D.sessions) + " sessions, " + fmt(D.tokens) + " tokens" + (fav ? ", mostly " + fav.name : "") + ". Make yours: wrapped.openyard.cloud";
         (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { copy.textContent = "Copied"; }, function () { window.prompt("Copy this:", t); });
       });
       document.fonts.load('800 40px "Bricolage"').then(function () { drawCard(canvas); }, function () { drawCard(canvas); });
@@ -242,7 +242,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       x.fillStyle = "rgba(243,241,234,.7)"; x.font = "500 22px " + F; x.fillText(s[1], L + i * sw, 532);
     });
     x.fillStyle = "rgba(198,244,50,.3)"; x.fillRect(L, 572, R - L, 2);
-    x.fillStyle = C.lime; x.font = "700 24px " + F; x.fillText("npx agent-wrapped", L, 622);
+    x.fillStyle = C.lime; x.font = "700 24px " + F; x.fillText("wrapped.openyard.cloud", L, 622);
     x.fillStyle = "rgba(243,241,234,.6)"; x.font = "500 19px " + F;
     var right = plain(D.sessions) + " sessions · local history " + dayLabel(cov.from) + " – " + dayLabel(cov.to);
     x.fillText(right, R - x.measureText(right).width, 622);
