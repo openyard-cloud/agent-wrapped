@@ -36,6 +36,11 @@ html, body { height: 100%; margin: 0; background: var(--ink); color: var(--paper
 .bars { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 5px; z-index: 5; }
 .bars i { flex: 1; height: 3px; border-radius: 2px; background: currentColor; opacity: .25; }
 .bars i.on { opacity: .9; }
+/* Autoplay, only when the page embedding the story asks for it: the current bar fills over the slide's time
+   (linear, as a progress indicator). Hovering pauses it; a tap or a key hands control to the viewer for good. */
+.auto .bars i.now { transform-origin: left center; animation: bar-fill var(--slide-ms, 3400ms) linear both; }
+.auto.paused .bars i.now { animation-play-state: paused; }
+@keyframes bar-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .slide { position: absolute; inset: 0; padding: 56px 30px 96px; display: none; flex-direction: column; justify-content: center; gap: 18px; background: var(--bg); color: var(--fg); }
 .slide > .kicker { position: absolute; top: 46px; left: 30px; right: 30px; }
 .slide.on { display: flex; animation: rise .45s cubic-bezier(.2,.8,.2,1); }
@@ -293,17 +298,35 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
   story.appendChild(prevTap); story.appendChild(nextTap);
   var at = 0;
   story.classList.add("still"); // no entrance animation on first load
+  var SLIDE_MS = 3400, auto = false, timer = null, startedAt = 0, remaining = 0;
+  function stopAuto() { auto = false; clearTimeout(timer); story.classList.remove("auto", "paused"); }
+  function step(ms) {
+    clearTimeout(timer); startedAt = Date.now(); remaining = ms;
+    timer = setTimeout(function () { show(at + 1); if (at >= nodes.length - 1) stopAuto(); else step(SLIDE_MS); }, ms);
+  }
+  function pause() { if (!auto || story.classList.contains("paused")) return; clearTimeout(timer); remaining -= Date.now() - startedAt; story.classList.add("paused"); }
+  function resume() { if (!auto || !story.classList.contains("paused")) return; story.classList.remove("paused"); step(Math.max(300, remaining)); }
   function show(i) {
     if (shown++) story.classList.remove("still");
     at = Math.max(0, Math.min(nodes.length - 1, i));
     nodes.forEach(function (n, k) { n.classList.toggle("on", k === at); });
-    [].forEach.call(bars.children, function (b, k) { b.classList.toggle("on", k <= at); });
+    [].forEach.call(bars.children, function (b, k) { b.classList.toggle("on", k <= at); b.classList.toggle("now", k === at); });
     bars.style.color = getComputedStyle(nodes[at]).color;
     story.classList.toggle("last", at === nodes.length - 1);
     try { location.hash = "s" + (at + 1); } catch (e) {}
   }
-  prevTap.addEventListener("click", function () { show(at - 1); });
-  nextTap.addEventListener("click", function () { show(at + 1); });
+  prevTap.addEventListener("click", function () { stopAuto(); show(at - 1); });
+  nextTap.addEventListener("click", function () { stopAuto(); show(at + 1); });
+  story.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") pause(); });
+  story.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") resume(); });
+  document.addEventListener("visibilitychange", function () { if (document.hidden) pause(); else resume(); });
+  window.addEventListener("message", function (e) {
+    if (e.origin !== location.origin || e.data !== "agent-wrapped:play") return;
+    if (auto || shown > 1 || at > 0) return; // the viewer already took over
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    auto = true; story.style.setProperty("--slide-ms", SLIDE_MS + "ms"); story.classList.add("auto"); show(at); step(SLIDE_MS);
+  });
+  document.addEventListener("keydown", function () { stopAuto(); });
   document.addEventListener("keydown", function (e) {
     if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); show(at + 1); }
     if (e.key === "ArrowLeft") show(at - 1);
