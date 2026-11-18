@@ -2,6 +2,8 @@
 
 **Your year with Claude Code, Spotify Wrapped style.** Made from the history already on your computer. Nothing is uploaded.
 
+**[wrapped.openyard.cloud](https://wrapped.openyard.cloud)** · [try the demo story](https://wrapped.openyard.cloud/demo)
+
 ```bash
 npx agent-wrapped
 ```
@@ -95,3 +97,7 @@ agent-wrapped is an independent open-source project. Claude and Claude Code are 
 ## License
 
 MIT. The embedded font, [Bricolage Grotesque](https://github.com/ateliertriay/bricolage), is under the SIL Open Font License 1.1 ([fonts/OFL.txt](fonts/OFL.txt)).
+
+## The website
+
+[wrapped.openyard.cloud](https://wrapped.openyard.cloud) is built from `site/` and served as static files by a Cloudflare Worker. `npm run site:build` writes `site/dist`; the demo story there is made by the same renderer the CLI uses. `npm run site:deploy` builds and deploys.
