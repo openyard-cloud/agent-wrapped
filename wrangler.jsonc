@@ -4,5 +4,7 @@
   "account_id": "7281c7193a9e8bcd8e0d8ffe1bd17b0a",
   "compatibility_date": "2026-11-01",
   "assets": { "directory": "./site/dist", "html_handling": "auto-trailing-slash" },
-  "routes": [{ "pattern": "wrapped.openyard.cloud", "custom_domain": true }]
+  "routes": [{ "pattern": "wrapped.openyard.cloud", "custom_domain": true }],
+  // Workers Builds makes a preview for every branch and pull request with `wrangler preview`, which needs this block.
+  "previews": {}
 }
