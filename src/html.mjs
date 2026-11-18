@@ -32,7 +32,7 @@ export function renderHtml(summary, { demo = false, font = fontBase64() } = {}) 
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; background: var(--ink); color: var(--paper); font-family: var(--display); }
 .stage { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; }
-.story { container-type: inline-size; position: relative; width: min(100%, 520px); height: min(100%, 900px); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+.story { container-type: size; position: relative; width: min(100%, 520px); height: min(100%, 900px); border-radius: 22px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
 .bars { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 5px; z-index: 5; }
 .bars i { flex: 1; height: 3px; border-radius: 2px; background: currentColor; opacity: .25; }
 .bars i.on { opacity: .9; }
@@ -41,7 +41,7 @@ html, body { height: 100%; margin: 0; background: var(--ink); color: var(--paper
 .auto .bars i.now { transform-origin: left center; animation: bar-fill var(--slide-ms, 3400ms) linear both; }
 .auto.paused .bars i.now { animation-play-state: paused; }
 @keyframes bar-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-.slide { position: absolute; inset: 0; padding: 64px 28px 92px; display: none; flex-direction: column; justify-content: center; gap: 16px; background: var(--bg); color: var(--fg); overflow: hidden; }
+.slide { position: absolute; inset: 0; padding: 64px 28px 92px; display: none; flex-direction: column; justify-content: safe center; gap: 16px; background: var(--bg); color: var(--fg); overflow: hidden; }
 .slide > .label { position: absolute; top: 40px; left: 28px; right: 28px; }
 .slide.on { display: flex; }
 /* Embedded in another page (the website's phone frame): fill the frame, no chrome of our own. */
@@ -64,11 +64,12 @@ h2 { font-size: clamp(34px, 9.5vw, 48px); }
 .row b { font-variant-numeric: tabular-nums; font-weight: 800; }
 .bar { height: 10px; border-radius: 5px; background: currentColor; margin-top: 6px; }
 .models { display: grid; gap: 2px; }
-.model { position: relative; display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; padding: 4px 10px; margin: 0 -10px; border-radius: 8px; font-size: 18px; font-weight: 700; }
+.model { position: relative; display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; padding: min(4px, .4cqh) 10px; margin: 0 -10px; border-radius: 8px; font-size: clamp(14px, 2.5cqh, 18px); font-weight: 700; }
 .model span:first-child { font-size: 13px; font-weight: 600; opacity: .65; }
 .model.fav { background: var(--ink); color: var(--lime); }
 .model.fav span:last-child { font-size: 12px; font-weight: 700; }
-.months { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 14px; }
+/* Twelve months must fit the slide's height as well as its width: 4 rows of 6 weeks plus labels, headline and notes. */
+.months { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 14px; width: 100%; max-width: max(150px, calc(71cqh - 245px)); }
 .month b { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; opacity: .8; color: var(--paper); }
 .month div { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 .month i { aspect-ratio: 1; border-radius: 2px; background: currentColor; }
