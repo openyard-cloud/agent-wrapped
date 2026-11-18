@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>agent-wrapped: your year with Claude Code, wrapped</title>
+<meta name="description" content="One command turns the Claude Code history already on your computer into a Spotify Wrapped style story and a card you can share. Local only, nothing uploaded.">
+<link rel="canonical" href="https://wrapped.openyard.cloud/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wrapped.openyard.cloud/">
+<meta property="og:title" content="agent-wrapped: your year with Claude Code, wrapped">
+<meta property="og:description" content="One command turns your local Claude Code history into a story and a card you can share. Nothing is uploaded.">
+<meta property="og:image" content="https://wrapped.openyard.cloud/card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="675">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://wrapped.openyard.cloud/card.png">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preload" href="/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/*
+  Design plan (frontend-design pass)
+  Subject: a year-in-review for people who code with Claude Code. The page should feel like the story it sells.
+  Color: the story's own slide colours used as full-width bands, the way Wrapped uses colour, not one accent on black.
+    sky #8ec5ff (hero) / lime #c6f432 (the card) / ink #14171c (how it works) / tomato #ff5a36 (privacy) / paper #f4f4ef (questions)
+  Type: Bricolage Grotesque only. Scale 17 / 22 / 32 / 56 / 104. Mono only for the actual command.
+  Layout: left-aligned. Hero = headline and command on the left, the real demo story running in a phone frame on the right.
+  Principles: the live demo is the one bold thing; no eyebrows, no all-caps labels, no accent word, no card grid.
+*/
+@font-face { font-family: "Bricolage"; src: url(/bricolage-latin.woff2) format("woff2"); font-weight: 200 800; font-display: swap; }
+:root {
+  --sky: #8ec5ff; --lime: #c6f432; --ink: #14171c; --tomato: #ff5a36; --paper: #f4f4ef; --white: #ffffff;
+  --display: "Bricolage", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--sky); color: var(--ink); font-family: var(--display); font-size: 17px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.inner { max-width: 1160px; margin: 0 auto; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
+.band { padding-block: 96px; }
+h1, h2 { font-weight: 800; letter-spacing: -0.035em; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(52px, 8.4vw, 104px); line-height: 0.92; }
+h2 { font-size: clamp(38px, 5.2vw, 56px); line-height: 0.98; }
+p { margin: 0; max-width: 58ch; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+/* Top line */
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 22px 0; font-size: 16px; font-weight: 600; }
+.top nav { display: flex; gap: 24px; }
+.top a { text-decoration: none; }
+.top a:hover { text-decoration: underline; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+.mark { width: 26px; height: 26px; flex: none; }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 64px; align-items: center; padding-block: 56px 96px; }
+.hero p.lead { font-size: 22px; line-height: 1.4; margin: 28px 0 32px; max-width: 30ch; font-weight: 500; }
+.cmd { display: flex; align-items: stretch; max-width: 560px; background: var(--ink); color: var(--white); border-radius: 14px; overflow: hidden; }
+.cmd code { flex: 1; min-width: 0; font-family: var(--mono); font-size: 16px; padding: 16px 18px; overflow-wrap: anywhere; line-height: 1.4; }
+.cmd button { font: 700 16px var(--display); border: 0; padding: 0 22px; background: var(--lime); color: var(--ink); cursor: pointer; }
+.cmd button:focus-visible { outline-color: var(--white); outline-offset: -4px; }
+.under { margin-top: 18px; font-size: 16px; font-weight: 500; }
+.phone { position: relative; width: 380px; height: 720px; border-radius: 44px; background: var(--ink); padding: 12px; box-shadow: 0 30px 70px rgba(20, 23, 28, 0.35); }
+.phone iframe { width: 100%; height: 100%; border: 0; border-radius: 34px; display: block; background: var(--ink); }
+.phone-note { margin-top: 14px; font-size: 15px; font-weight: 500; text-align: center; width: 380px; }
+
+/* The card */
+.card-band { background: var(--lime); }
+.card-band .inner { display: grid; gap: 40px; }
+.card-band img { width: 100%; height: auto; display: block; border-radius: 18px; box-shadow: 0 30px 70px rgba(20, 23, 28, 0.28); }
+.card-copy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: end; }
+.card-copy p { font-size: 20px; line-height: 1.45; }
+
+/* How it works: a real sequence, so it is numbered */
+.how { background: var(--ink); color: var(--white); }
+.how ol { list-style: none; margin: 48px 0 0; padding: 0; display: grid; counter-reset: step; }
+.how li { counter-increment: step; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 24px; padding-block: 28px; border-top: 2px solid rgba(255, 255, 255, 0.14); }
+.how li::before { content: counter(step); font-size: 56px; font-weight: 800; line-height: 1; color: var(--lime); letter-spacing: -0.04em; }
+.how h3 { margin: 0 0 6px; font-size: 32px; letter-spacing: -0.02em; line-height: 1.1; }
+.how li p { font-size: 18px; color: #d7d9d4; }
+.how code { font-family: var(--mono); font-size: 15px; background: rgba(255, 255, 255, 0.1); padding: 2px 7px; border-radius: 6px; }
+
+/* Privacy */
+.privacy { background: var(--tomato); }
+.privacy .grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 56px; align-items: start; }
+.privacy ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 26px; }
+.privacy li { font-size: 22px; line-height: 1.35; font-weight: 500; }
+.privacy li b { font-weight: 800; display: block; }
+
+/* Questions */
+.faq { background: var(--paper); }
+.faq .list { margin-top: 40px; max-width: 820px; border-top: 2px solid var(--ink); }
+details { border-bottom: 2px solid var(--ink); }
+summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; align-items: baseline; padding: 22px 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font-size: 28px; font-weight: 500; line-height: 1; }
+details[open] summary::after { content: "−"; }
+details p { padding-bottom: 24px; font-size: 18px; }
+details code { font-family: var(--mono); font-size: 15px; background: rgba(20, 23, 28, 0.08); padding: 2px 6px; border-radius: 6px; }
+
+/* Last call */
+.last { background: var(--sky); }
+.last h2 { margin-bottom: 28px; }
+footer { background: var(--ink); color: #c9ccc6; padding-block: 36px 48px; font-size: 15px; }
+footer .inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; }
+footer a { color: var(--white); }
+.brand-foot { display: inline-flex; align-items: center; gap: 12px; }
+
+@media (max-width: 980px) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 48px; }
+  .phone-wrap { justify-self: center; }
+  .card-copy, .privacy .grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
+@media (max-width: 520px) {
+  .band { padding-block: 64px; }
+  .phone, .phone-note { width: min(340px, calc(100vw - 48px)); }
+  .phone { height: 640px; border-radius: 38px; }
+  .how li { grid-template-columns: 56px minmax(0, 1fr); gap: 14px; }
+  .how li::before { font-size: 40px; }
+  .how h3 { font-size: 26px; }
+  .top nav a.wide { display: none; }
+  .cmd { flex-direction: column; }
+  .cmd button { padding: 14px; }
+  summary { font-size: 19px; }
+  .privacy li { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+<div class="inner">
+  <div class="top">
+    <a class="brand" href="/"><svg class="mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="0" y="0" width="8" height="8" rx="2" fill="currentColor" opacity="0.35"/><rect x="9" y="0" width="8" height="8" rx="2" fill="currentColor" opacity="1"/><rect x="18" y="0" width="8" height="8" rx="2" fill="currentColor" opacity="0.6"/><rect x="0" y="9" width="8" height="8" rx="2" fill="currentColor" opacity="1"/><rect x="9" y="9" width="8" height="8" rx="2" fill="currentColor" opacity="0.6"/><rect x="18" y="9" width="8" height="8" rx="2" fill="currentColor" opacity="1"/><rect x="0" y="18" width="8" height="8" rx="2" fill="currentColor" opacity="0.6"/><rect x="9" y="18" width="8" height="8" rx="2" fill="currentColor" opacity="0.25"/><rect x="18" y="18" width="8" height="8" rx="2" fill="currentColor" opacity="1"/></svg>agent-wrapped</a>
+    <nav>
+      <a class="wide" href="#how">How it works</a>
+      <a class="wide" href="#questions">Questions</a>
+      <a href="https://github.com/openyard-cloud/agent-wrapped">GitHub</a>
+    </nav>
+  </div>
+
+  <header class="hero">
+    <div>
+      <h1>Your year with Claude Code, wrapped</h1>
+      <p class="lead">One command turns the history already on your computer into a short story and a card you can post. Nothing is uploaded.</p>
+      <div class="cmd"><code>npx github:openyard-cloud/agent-wrapped</code><button type="button" data-copy="npx github:openyard-cloud/agent-wrapped">Copy</button></div>
+      <p class="under">Needs Node 18 or newer. No account, no API key.</p>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone"><iframe src="/demo/" title="The agent-wrapped story, running on demo data" loading="eager"></iframe></div>
+      <p class="phone-note">This is the real story, on demo data. Tap it.</p>
+    </div>
+  </header>
+</div>
+
+<section class="band card-band">
+  <div class="inner">
+    <img src="/card.png" width="1200" height="675" alt="A share card: The Night Owl, a heatmap of the whole year, 248 active days, 155M tokens, a 14-day streak, favourite model Opus 4.8. Demo data." loading="lazy">
+    <div class="card-copy">
+      <h2>The last slide is a card you can post</h2>
+      <p>Your label, your year as a heatmap, active days, tokens, your longest streak and your favourite model. Sized 1200 by 675 for X and LinkedIn, saved as a PNG with one button.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band how" id="how">
+  <div class="inner">
+    <h2>How it works</h2>
+    <ol>
+      <li><div><h3>Paste the command</h3><p>Any terminal on the computer where you use Claude Code. It runs straight from the GitHub repository.</p></div></li>
+      <li><div><h3>It reads what Claude Code already keeps</h3><p>The <code>/stats</code> cache, which goes back to your first session, and the session transcripts in <code>~/.claude</code>. Days that both cover are counted once.</p></div></li>
+      <li><div><h3>Tap through, save your card</h3><p>One HTML file opens in your browser. The last slide saves your card.</p></div></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band privacy">
+  <div class="inner grid">
+    <h2>Your history stays on your computer</h2>
+    <ul>
+      <li><b>Nothing is uploaded.</b>It reads local files and writes one page that makes no network requests.</li>
+      <li><b>The card shows totals only.</b>No prompts, no file names, no project names. A test fails if any of them reach the page.</li>
+      <li><b>You can read all of it.</b>About 800 lines of code, no dependencies, MIT licensed.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="band faq" id="questions">
+  <div class="inner">
+    <h2>Questions</h2>
+    <div class="list">
+      <details><summary>Why do some months look empty?</summary><p>Claude Code deletes session transcripts after 30 days by default. agent-wrapped also reads the <code>/stats</code> cache, which goes back further but only up to the last time you ran <code>/stats</code>. Run <code>/stats</code> once, then run agent-wrapped again. For a full year next time, set <code>"cleanupPeriodDays": 365</code> in <code>~/.claude/settings.json</code>.</p></details>
+      <details><summary>What does "value at API prices" mean?</summary><p>Claude Code's own estimate of what the same usage would cost on the API. On a subscription, it isn't what you paid.</p></details>
+      <details><summary>How is the longest session measured?</summary><p>By active time. Pauses longer than 30 minutes are left out, so a session left open overnight doesn't count as twelve hours.</p></details>
+      <details><summary>Does it work with Codex, Gemini CLI or Cursor?</summary><p>Not yet. Claude Code comes first. Pull requests are welcome.</p></details>
+      <details><summary>Can I run it as a slash command?</summary><p>Yes. Run <code>claude plugin marketplace add openyard-cloud/agent-wrapped</code> and <code>claude plugin install agent-wrapped@agent-wrapped</code>, then type <code>/wrapped</code>.</p></details>
+      <details><summary>Is this made by Anthropic?</summary><p>No. agent-wrapped is an independent open-source project. Claude and Claude Code are products of Anthropic.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="band last">
+  <div class="inner">
+    <h2>See your year</h2>
+    <div class="cmd"><code>npx github:openyard-cloud/agent-wrapped</code><button type="button" data-copy="npx github:openyard-cloud/agent-wrapped">Copy</button></div>
+  </div>
+</section>
+
+<footer>
+  <div class="inner">
+    <span class="brand-foot"><svg class="mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="0" y="0" width="8" height="8" rx="2" fill="#c6f432" opacity="0.35"/><rect x="9" y="0" width="8" height="8" rx="2" fill="#c6f432" opacity="1"/><rect x="18" y="0" width="8" height="8" rx="2" fill="#c6f432" opacity="0.6"/><rect x="0" y="9" width="8" height="8" rx="2" fill="#c6f432" opacity="1"/><rect x="9" y="9" width="8" height="8" rx="2" fill="#c6f432" opacity="0.6"/><rect x="18" y="9" width="8" height="8" rx="2" fill="#c6f432" opacity="1"/><rect x="0" y="18" width="8" height="8" rx="2" fill="#c6f432" opacity="0.6"/><rect x="9" y="18" width="8" height="8" rx="2" fill="#c6f432" opacity="0.25"/><rect x="18" y="18" width="8" height="8" rx="2" fill="#c6f432" opacity="1"/></svg><span>agent-wrapped is open source on <a href="https://github.com/openyard-cloud/agent-wrapped">GitHub</a>, MIT licensed.</span></span>
+    <span>Shared on <a href="https://openyard.cloud">OpenYard</a>. Not affiliated with Anthropic.</span>
+  </div>
+</footer>
+<script>
+document.querySelectorAll("[data-copy]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var t = b.getAttribute("data-copy");
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () {
+      b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1600);
+    }, function () {
+      var r = document.createRange(); r.selectNodeContents(b.parentNode.querySelector("code"));
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -42,6 +42,10 @@ html, body { height: 100%; margin: 0; background: var(--ink); color: var(--paper
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .slide.on { animation: none; } }
 .still .slide.on { animation: none; }
+/* Embedded in another page (the website's phone frame): fill the frame, no chrome of our own. */
+.embedded .stage { padding: 0; }
+.embedded .story { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+.embedded .hint { display: none; }
 .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
 h1, h2 { margin: 0; font-weight: 800; letter-spacing: -.03em; line-height: .95; }
 h1 { font-size: clamp(54px, 15vw, 84px); }
@@ -84,6 +88,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 (function () {
   "use strict";
   var D = JSON.parse(document.getElementById("data").textContent);
+  try { if (window.self !== window.top) document.documentElement.classList.add("embedded"); } catch (e) { document.documentElement.classList.add("embedded"); }
   var story = document.getElementById("story"), bars = document.getElementById("bars");
 
   function fmt(n) {
@@ -195,7 +200,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       var save = el("button", { text: "Save image" }), copy = el("button", { class: "ghost", text: "Copy text" });
       save.addEventListener("click", function () { canvas.toBlob(function (b) { var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "agent-wrapped-" + D.year + ".png"; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }, "image/png"); });
       copy.addEventListener("click", function () {
-        var t = "My " + D.year + " with Claude Code: " + D.persona.title + ". " + D.activeDays + " active days, " + plain(D.sessions) + " sessions, " + fmt(D.tokens) + " tokens" + (fav ? ", mostly " + fav.name : "") + ". Made with npx agent-wrapped";
+        var t = "My " + D.year + " with Claude Code: " + D.persona.title + ". " + D.activeDays + " active days, " + plain(D.sessions) + " sessions, " + fmt(D.tokens) + " tokens" + (fav ? ", mostly " + fav.name : "") + ". Make yours: wrapped.openyard.cloud";
         (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { copy.textContent = "Copied"; }, function () { window.prompt("Copy this:", t); });
       });
       document.fonts.load('800 40px "Bricolage"').then(function () { drawCard(canvas); }, function () { drawCard(canvas); });
@@ -242,7 +247,7 @@ button:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
       x.fillStyle = "rgba(243,241,234,.7)"; x.font = "500 22px " + F; x.fillText(s[1], L + i * sw, 532);
     });
     x.fillStyle = "rgba(198,244,50,.3)"; x.fillRect(L, 572, R - L, 2);
-    x.fillStyle = C.lime; x.font = "700 24px " + F; x.fillText("npx agent-wrapped", L, 622);
+    x.fillStyle = C.lime; x.font = "700 24px " + F; x.fillText("wrapped.openyard.cloud", L, 622);
     x.fillStyle = "rgba(243,241,234,.6)"; x.font = "500 19px " + F;
     var right = plain(D.sessions) + " sessions · local history " + dayLabel(cov.from) + " – " + dayLabel(cov.to);
     x.fillText(right, R - x.measureText(right).width, 622);

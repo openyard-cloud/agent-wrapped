@@ -12,7 +12,7 @@ import { demoSummary } from "../src/demo.mjs";
 const HELP = `agent-wrapped: your year with Claude Code, made from the history on this computer.
 
 Usage
-  npx agent-wrapped [options]
+  npx github:openyard-cloud/agent-wrapped [options]
 
 Options
   --year <yyyy>   Year to wrap (default: this year)
@@ -57,12 +57,12 @@ async function main() {
   if (o.demo) summary = demoSummary(year);
   else {
     const dir = claudeDir();
-    if (!fs.existsSync(dir)) { console.error(`agent-wrapped: no Claude Code history found at ${dir}\nIf it lives elsewhere, set CLAUDE_CONFIG_DIR. To see the page anyway: npx agent-wrapped --demo`); return 1; }
+    if (!fs.existsSync(dir)) { console.error(`agent-wrapped: no Claude Code history found at ${dir}\nIf it lives elsewhere, set CLAUDE_CONFIG_DIR. To see the page anyway, run it again with --demo`); return 1; }
     const progress = process.stderr.isTTY && !o.json;
     const acc = await readTranscripts(dir, { year, onProgress: progress ? (d, t) => process.stderr.write(`\r  reading your sessions ${d}/${t}`) : undefined });
     if (progress) process.stderr.write("\r\x1b[2K");
     summary = summarize({ acc, cache: readStatsCache(dir), year });
-    if (summary.activeDays === 0) { console.error(`agent-wrapped: no Claude Code activity found for ${year} in ${dir}\nTry another --year, or npx agent-wrapped --demo to see the page.`); return 1; }
+    if (summary.activeDays === 0) { console.error(`agent-wrapped: no Claude Code activity found for ${year} in ${dir}\nTry another --year, or run it again with --demo to see the page.`); return 1; }
   }
 
   if (o.json) { console.log(JSON.stringify(summary, null, 2)); return 0; }
